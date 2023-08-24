@@ -3,18 +3,28 @@ package eval
 import (
 	"context"
 
+	"github.com/grafana/grafana-plugin-sdk-go/data"
+
 	"github.com/grafana/grafana/pkg/services/user"
 )
 
-// EvaluationContext represents the context in which a condition is evaluated.
-type EvaluationContext struct {
-	Ctx  context.Context
-	User *user.SignedInUser
+// AlertingResultsReader provides fingerprints of results that are in alerting state.
+// It is used during the evaluation of queries.
+type AlertingResultsReader interface {
+	Read() map[data.Fingerprint]struct{}
 }
 
-func NewContext(ctx context.Context, user *user.SignedInUser) EvaluationContext {
+// EvaluationContext represents the context in which a condition is evaluated.
+type EvaluationContext struct {
+	Ctx                   context.Context
+	User                  *user.SignedInUser
+	AlertingResultsReader AlertingResultsReader
+}
+
+func NewContext(ctx context.Context, user *user.SignedInUser, reader AlertingResultsReader) EvaluationContext {
 	return EvaluationContext{
-		Ctx:  ctx,
-		User: user,
+		Ctx:                   ctx,
+		User:                  user,
+		AlertingResultsReader: reader,
 	}
 }
