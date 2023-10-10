@@ -537,7 +537,7 @@ func TestValidate(t *testing.T) {
 			})
 
 			evaluator := NewEvaluatorFactory(setting.UnifiedAlertingSettings{}, cacheService, expr.ProvideService(&setting.Cfg{ExpressionsEnabled: true}, nil, nil, &featuremgmt.FeatureManager{}, nil, tracing.InitializeTracerForTest()), store)
-			evalCtx := NewContext(context.Background(), u, nil)
+			evalCtx := NewContext(context.Background(), u)
 
 			err := evaluator.Validate(evalCtx, condition)
 			if testCase.error {

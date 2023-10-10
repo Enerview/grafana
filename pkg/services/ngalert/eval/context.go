@@ -21,7 +21,14 @@ type EvaluationContext struct {
 	AlertingResultsReader AlertingResultsReader
 }
 
-func NewContext(ctx context.Context, user *user.SignedInUser, reader AlertingResultsReader) EvaluationContext {
+func NewContext(ctx context.Context, user *user.SignedInUser) EvaluationContext {
+	return EvaluationContext{
+		Ctx:  ctx,
+		User: user,
+	}
+}
+
+func NewContextWithPreviousResults(ctx context.Context, user *user.SignedInUser, reader AlertingResultsReader) EvaluationContext {
 	return EvaluationContext{
 		Ctx:                   ctx,
 		User:                  user,

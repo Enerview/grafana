@@ -484,7 +484,7 @@ func verifyProvisionedRulesNotAffected(ctx context.Context, provenanceStore prov
 func validateQueries(ctx context.Context, groupChanges *store.GroupDelta, validator ConditionValidator, user *user.SignedInUser) error {
 	if len(groupChanges.New) > 0 {
 		for _, rule := range groupChanges.New {
-			err := validator.Validate(eval.NewContext(ctx, user, nil), rule.GetEvalCondition())
+			err := validator.Validate(eval.NewContext(ctx, user), rule.GetEvalCondition())
 			if err != nil {
 				return fmt.Errorf("%w '%s': %s", ngmodels.ErrAlertRuleFailedValidation, rule.Title, err.Error())
 			}
@@ -492,7 +492,7 @@ func validateQueries(ctx context.Context, groupChanges *store.GroupDelta, valida
 	}
 	if len(groupChanges.Update) > 0 {
 		for _, upd := range groupChanges.Update {
-			err := validator.Validate(eval.NewContext(ctx, user, nil), upd.New.GetEvalCondition())
+			err := validator.Validate(eval.NewContext(ctx, user), upd.New.GetEvalCondition())
 			if err != nil {
 				return fmt.Errorf("%w '%s' (UID: %s): %s", ngmodels.ErrAlertRuleFailedValidation, upd.New.Title, upd.New.UID, err.Error())
 			}
