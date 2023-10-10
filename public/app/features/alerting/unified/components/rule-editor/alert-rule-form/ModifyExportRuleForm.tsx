@@ -34,13 +34,7 @@ export function ModifyExportRuleForm({ ruleForm, alertUid }: ModifyExportRuleFor
 
   const [showExporter, setShowExporter] = useState<ModifyExportMode | undefined>(undefined);
 
-  const [conditionErrorMsg, setConditionErrorMsg] = useState('');
-  console.log('conditionErrorMsg', conditionErrorMsg);
   const [evaluateEvery, setEvaluateEvery] = useState(ruleForm?.evaluateEvery ?? MINUTE);
-
-  const checkAlertCondition = (msg = '') => {
-    setConditionErrorMsg(msg);
-  };
 
   const actionButtons = [
     <LinkButton href={returnTo} key="cancel" size="sm" variant="secondary">
@@ -65,7 +59,7 @@ export function ModifyExportRuleForm({ ruleForm, alertUid }: ModifyExportRuleFor
                 {/* Step 1 */}
                 <AlertRuleNameInput />
                 {/* Step 2 */}
-                <QueryAndExpressionsStep editingExistingRule={existing} onDataChange={checkAlertCondition} />
+                <QueryAndExpressionsStep editingExistingRule={existing} />
                 {/* Step 3-4-5 */}
 
                 <GrafanaEvaluationBehavior

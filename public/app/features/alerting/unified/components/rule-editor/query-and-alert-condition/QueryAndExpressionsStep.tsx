@@ -49,16 +49,16 @@ import { useAlertQueryRunner } from './useAlertQueryRunner';
 
 interface Props {
   editingExistingRule: boolean;
-  onDataChange: (error: string) => void;
 }
 
-export const QueryAndExpressionsStep = ({ editingExistingRule, onDataChange }: Props) => {
+export const QueryAndExpressionsStep = ({ editingExistingRule }: Props) => {
   const {
     setValue,
     getValues,
     watch,
     formState: { errors },
     control,
+    setError,
   } = useFormContext<RuleFormValues>();
 
   const { queryPreviewData, runQueries, cancelQueries, isPreviewLoading, clearPreviewData } = useAlertQueryRunner();
@@ -129,8 +129,11 @@ export const QueryAndExpressionsStep = ({ editingExistingRule, onDataChange }: P
 
     const error = errorFromPreviewData(previewData) ?? errorFromCurrentCondition(previewData);
 
-    onDataChange(error?.message || '');
-  }, [queryPreviewData, getValues, onDataChange, isGrafanaManagedType]);
+    setError('condition', {
+      type: 'validation',
+      message: error?.message,
+    });
+  }, [queryPreviewData, getValues, setError, isGrafanaManagedType]);
 
   const handleSetCondition = useCallback(
     (refId: string | null) => {

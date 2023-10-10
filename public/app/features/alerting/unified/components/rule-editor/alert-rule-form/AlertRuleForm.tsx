@@ -99,18 +99,7 @@ export const AlertRuleForm = ({ existing, prefill }: Props) => {
   const submitState = useUnifiedAlertingSelector((state) => state.ruleForm.saveRule) || initialAsyncRequestState;
   useCleanup((state) => (state.unifiedAlerting.ruleForm.saveRule = initialAsyncRequestState));
 
-  const [conditionErrorMsg, setConditionErrorMsg] = useState('');
-
-  const checkAlertCondition = (msg = '') => {
-    setConditionErrorMsg(msg);
-  };
-
   const submit = (values: RuleFormValues, exitOnSave: boolean) => {
-    if (conditionErrorMsg !== '') {
-      notifyApp.error(conditionErrorMsg);
-      return;
-    }
-
     dispatch(
       saveRuleFormAction({
         values: {
@@ -223,7 +212,7 @@ export const AlertRuleForm = ({ existing, prefill }: Props) => {
               {/* Step 1 */}
               <AlertRuleNameInput />
               {/* Step 2 */}
-              <QueryAndExpressionsStep editingExistingRule={!!existing} onDataChange={checkAlertCondition} />
+              <QueryAndExpressionsStep editingExistingRule={!!existing} />
               {/* Step 3-4-5 */}
               {showDataSourceDependantStep && (
                 <>
