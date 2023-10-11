@@ -75,13 +75,15 @@ export const Threshold = ({ labelWidth, onChange, refIds, query, onError }: Prop
   const HysteresisSection = ({ isRange, onError }: { isRange: boolean; onError?: (error: string) => void }) => {
     const hasHysteresis = Boolean(condition.unloadEvaluator);
 
-    const onHysteresisChange = (event: FormEvent<HTMLInputElement>) => {
+    const onHysteresisCheckChange = (event: FormEvent<HTMLInputElement>) => {
       if (!event.currentTarget.checked) {
+        // change to not checked
         onChange({
           ...query,
           conditions: updateUnloadEvaluatorConditions(conditions, { params: [] }, false),
         });
       } else {
+        // check to checked
         onChange({
           ...query,
           conditions: updateUnloadEvaluatorConditions(conditions, {}, true),
@@ -92,7 +94,7 @@ export const Threshold = ({ labelWidth, onChange, refIds, query, onError }: Prop
       <>
         <InlineFieldRow>
           <Stack direction="row" gap={2} alignItems="center">
-            <Switch value={hasHysteresis} onChange={onHysteresisChange} />
+            <Switch value={hasHysteresis} onChange={onHysteresisCheckChange} />
             Custom recovery threshold
           </Stack>
         </InlineFieldRow>
@@ -232,7 +234,7 @@ function updateUnloadEvaluatorConditions(
 ): ClassicCondition[] {
   const defaultUnloaEvaluator = {
     type: defaultUnloadThresholdFunction,
-    params: [0, 0],
+    params: conditions[0].evaluator?.params ?? [0, 0],
   };
   if (!hysteresisChecked) {
     return [
@@ -282,7 +284,7 @@ function RecoveryThresholdRow({
     const newValue = parseFloat(event.currentTarget.value);
     const newParams = condition.unloadEvaluator
       ? [...condition.unloadEvaluator.params]
-      : [...defaultEvaluator.evaluator.params]; //not sure about the else
+      : [...defaultEvaluator.evaluator.params]; // if there is no unload evaluator, we use the default evaluator params
     newParams[index] = newValue;
 
     onChange({
@@ -298,59 +300,55 @@ function RecoveryThresholdRow({
     if (condition.evaluator?.type === EvalFunction.IsAbove) {
       if (condition.unloadEvaluator?.params[paramIndex] > condition.evaluator.params[paramIndex]) {
         return {
-          error: true,
           errorMsg: `Enter a number less than or equal to ${condition.evaluator.params[paramIndex]}`,
         };
       }
-      return { error: false };
+      return;
     }
     // evaluator is below, unload evaluator value should be
     if (condition.evaluator?.type === EvalFunction.IsBelow) {
       if (condition.unloadEvaluator?.params[paramIndex] < condition.evaluator.params[paramIndex]) {
         return {
-          error: true,
           errorMsg: `Enter a number more than or equal to ${condition.evaluator.params[paramIndex]}`,
         };
       }
-      return { error: false };
+      return;
     }
     // evaluator is outside range, unload evaluator value should be
     if (condition.evaluator?.type === EvalFunction.IsOutsideRange) {
       // first param
       if (condition.unloadEvaluator?.params[0] < condition.evaluator.params[0]) {
         return {
-          error: true,
-          errorMsg: `First number should be more than or equal to${condition.evaluator.params[0]}`,
+          errorMsgFrom: `Enter a number more than or equal to${condition.evaluator.params[0]}`,
         };
       }
       // second param
       if (condition.unloadEvaluator?.params[1] > condition.evaluator.params[1]) {
         return {
-          error: true,
-          errorMsg: `Second number should be less than or equal to ${condition.evaluator.params[1]}`,
+          errorMsgTo: `Enter a number less than or equal to ${condition.evaluator.params[1]}`,
         };
       }
-      return { error: false };
+      return;
     }
     // evaluator is inside range, unload evaluator value should be
     if (condition.evaluator?.type === EvalFunction.IsWithinRange) {
       // first param
       if (condition.unloadEvaluator?.params[0] > condition.evaluator.params[0]) {
-        return { error: true, errorMsg: `First number should less than or equal to${condition.evaluator.params[0]}` };
+        return { errorMsgFrom: `Enter a number less than or equal to${condition.evaluator.params[0]}` };
       }
 
       // second param
       if (condition.unloadEvaluator?.params[1] < condition.evaluator.params[1]) {
         return {
-          error: true,
-          errorMsg: `Second number should be more than or equal to ${condition.evaluator.params[1]}`,
+          errorMsgTo: `Enter a number be more than or equal to ${condition.evaluator.params[1]}`,
         };
       }
     }
-    return { error: false };
+    return;
   };
 
-  const { errorMsg: invalidErrorMsg, error: invalid } = useMemo(() => isInvalid(condition), [condition]);
+  const error = useMemo(() => isInvalid(condition), [condition]);
+  const { errorMsg: invalidErrorMsg, errorMsgFrom, errorMsgTo } = error ?? {};
 
   useEffect(() => {
     invalidErrorMsg && onError?.(invalidErrorMsg);
@@ -360,28 +358,27 @@ function RecoveryThresholdRow({
     if (condition.evaluator.type === EvalFunction.IsWithinRange) {
       return (
         <InlineFieldRow>
-          <InlineField
-            label="Stop alerting when outside range"
-            labelWidth={labelWidth}
-            invalid={invalid}
-            error={invalidErrorMsg}
-          >
+          <InlineField label="Stop alerting when outside range" labelWidth={labelWidth}>
             <Stack direction="row">
-              <Input
-                type="number"
-                width={10}
-                onChange={(event) => onUnloadValueChange(event, 0)}
-                defaultValue={condition.evaluator.params[0]}
-                value={condition.unloadEvaluator?.params[0]}
-              />
+              <InlineField invalid={Boolean(errorMsgFrom)} error={errorMsgFrom}>
+                <Input
+                  type="number"
+                  width={10}
+                  onChange={(event) => onUnloadValueChange(event, 0)}
+                  defaultValue={condition.evaluator.params[0]}
+                  value={condition.unloadEvaluator?.params[0]}
+                />
+              </InlineField>
               <div className={styles.button}>TO</div>
-              <Input
-                type="number"
-                width={10}
-                onChange={(event) => onUnloadValueChange(event, 1)}
-                defaultValue={condition.evaluator.params[1]}
-                value={condition.unloadEvaluator?.params[1]}
-              />
+              <InlineField invalid={Boolean(errorMsgTo)} error={errorMsgTo}>
+                <Input
+                  type="number"
+                  width={10}
+                  onChange={(event) => onUnloadValueChange(event, 1)}
+                  defaultValue={condition.evaluator.params[1]}
+                  value={condition.unloadEvaluator?.params[1]}
+                />
+              </InlineField>
             </Stack>
           </InlineField>
         </InlineFieldRow>
@@ -389,28 +386,27 @@ function RecoveryThresholdRow({
     } else {
       return (
         <InlineFieldRow>
-          <InlineField
-            label="Stop alerting when inside range"
-            labelWidth={labelWidth}
-            invalid={invalid}
-            error={invalidErrorMsg}
-          >
+          <InlineField label="Stop alerting when inside range" labelWidth={labelWidth}>
             <Stack direction="row">
-              <Input
-                type="number"
-                width={10}
-                onChange={(event) => onUnloadValueChange(event, 0)}
-                defaultValue={condition.evaluator.params[0]}
-                value={condition.unloadEvaluator?.params[0]}
-              />
+              <InlineField invalid={Boolean(errorMsgFrom)} error={errorMsgFrom}>
+                <Input
+                  type="number"
+                  width={10}
+                  onChange={(event) => onUnloadValueChange(event, 0)}
+                  defaultValue={condition.evaluator.params[0]}
+                  value={condition.unloadEvaluator?.params[0]}
+                />
+              </InlineField>
               <div className={styles.button}>TO</div>
-              <Input
-                type="number"
-                width={10}
-                onChange={(event) => onUnloadValueChange(event, 1)}
-                defaultValue={condition.evaluator.params[1]}
-                value={condition.unloadEvaluator?.params[1]}
-              />
+              <InlineField invalid={Boolean(errorMsgTo)} error={errorMsgTo}>
+                <Input
+                  type="number"
+                  width={10}
+                  onChange={(event) => onUnloadValueChange(event, 1)}
+                  defaultValue={condition.evaluator.params[1]}
+                  value={condition.unloadEvaluator?.params[1]}
+                />
+              </InlineField>
             </Stack>
           </InlineField>
         </InlineFieldRow>
@@ -423,7 +419,7 @@ function RecoveryThresholdRow({
           <InlineField
             label="Stop alerting when bellow"
             labelWidth={labelWidth}
-            invalid={invalid}
+            invalid={Boolean(invalidErrorMsg)}
             error={invalidErrorMsg}
           >
             <Input
@@ -442,7 +438,7 @@ function RecoveryThresholdRow({
           <InlineField
             label="Stop alerting when above"
             labelWidth={labelWidth}
-            invalid={invalid}
+            invalid={Boolean(invalidErrorMsg)}
             error={invalidErrorMsg}
           >
             <Input
