@@ -1326,7 +1326,7 @@ func TestIntegrationHysteresisRule(t *testing.T) {
 	testinfra.SQLiteIntegrationTest(t)
 
 	// Setup Grafana and its Database. Scheduler is set to evaluate every 1 second
-	dir, path := testinfra.CreateGrafDir(t, testinfra.GrafanaOpts{
+	dir, p := testinfra.CreateGrafDir(t, testinfra.GrafanaOpts{
 		DisableLegacyAlerting:        true,
 		EnableUnifiedAlerting:        true,
 		DisableAnonymous:             true,
@@ -1335,7 +1335,7 @@ func TestIntegrationHysteresisRule(t *testing.T) {
 		EnableFeatureToggles:         []string{"configurableSchedulerTick"},
 	})
 
-	grafanaListedAddr, store := testinfra.StartGrafana(t, dir, path)
+	grafanaListedAddr, store := testinfra.StartGrafana(t, dir, p)
 
 	// Create a user to make authenticated requests
 	createUser(t, store, user.CreateUserCommand{
@@ -1360,13 +1360,10 @@ func TestIntegrationHysteresisRule(t *testing.T) {
 			rule.GrafanaManagedAlert.Data[i].DatasourceUID = strings.ReplaceAll(rule.GrafanaManagedAlert.Data[i].DatasourceUID, "REPLACE_ME", testDs.Body.Datasource.UID)
 		}
 	}
-	status, body := apiClient.PostRulesGroup(t, folder, &postData)
+	changes, status, body := apiClient.PostRulesGroupWithStatus(t, folder, &postData)
 	require.Equalf(t, http.StatusAccepted, status, body)
-
-	get, status, _ := apiClient.GetRulesGroupWithStatus(t, folder, postData.Name)
-	require.Equal(t, http.StatusAccepted, status)
-	require.Len(t, get.Rules, 1)
-	ruleUid := get.Rules[0].GrafanaManagedAlert.UID
+	require.Len(t, changes.Created, 1)
+	ruleUid := changes.Created[0]
 
 	var frame data.Frame
 	require.Eventuallyf(t, func() bool {
