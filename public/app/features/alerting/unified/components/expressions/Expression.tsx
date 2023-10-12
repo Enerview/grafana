@@ -20,7 +20,6 @@ import {
 import { AlertQuery, PromAlertingRuleState } from 'app/types/unified-alerting-dto';
 
 import { usePagination } from '../../hooks/usePagination';
-import { RuleFormValues } from '../../types/rule-form';
 import { HoverCard } from '../HoverCard';
 import { Spacer } from '../Spacer';
 import { AlertStateTag } from '../rules/AlertStateTag';
@@ -59,10 +58,15 @@ export const Expression: FC<ExpressionProps> = ({
 
   const queryType = query?.type;
 
-  const { setError } = useFormContext<RuleFormValues>();
+  const { setError, clearErrors } = useFormContext();
+
   const onQueriesValidationError = useCallback(
-    () => (errorMsg: string) => setError('queries', { type: 'validate', message: errorMsg }),
-    [setError]
+    (errorMsg: string | undefined) => {
+      console.log('error msg', errorMsg);
+      errorMsg && setError('queries', { type: 'custom', message: errorMsg });
+      !errorMsg && clearErrors('queries');
+    },
+    [setError, clearErrors]
   );
 
   const isLoading = data && Object.values(data).some((d) => Boolean(d) && d.state === LoadingState.Loading);

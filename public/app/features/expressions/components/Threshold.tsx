@@ -1,5 +1,5 @@
 import { css } from '@emotion/css';
-import React, { FormEvent, useEffect, useMemo } from 'react';
+import React, { FormEvent } from 'react';
 
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { Stack } from '@grafana/experimental';
@@ -14,7 +14,7 @@ interface Props {
   refIds: Array<SelectableValue<string>>;
   query: ExpressionQuery;
   onChange: (query: ExpressionQuery) => void;
-  onError?: (error: string) => void;
+  onError?: (error: string | undefined) => void;
 }
 
 const defaultThresholdFunction = EvalFunction.IsAbove;
@@ -72,46 +72,51 @@ export const Threshold = ({ labelWidth, onChange, refIds, query, onError }: Prop
 
   const hysteresisEnabled = Boolean(config.featureToggles?.recoveryThreshold);
 
-  const HysteresisSection = ({ isRange, onError }: { isRange: boolean; onError?: (error: string) => void }) => {
-    const hasHysteresis = Boolean(condition.unloadEvaluator);
+  const HysteresisSection = React.memo(
+    ({ isRange, onError }: { isRange: boolean; onError?: (error: string | undefined) => void }) => {
+      const hasHysteresis = Boolean(condition.unloadEvaluator);
 
-    const onHysteresisCheckChange = (event: FormEvent<HTMLInputElement>) => {
-      if (!event.currentTarget.checked) {
-        // change to not checked
-        onChange({
-          ...query,
-          conditions: updateUnloadEvaluatorConditions(conditions, { params: [] }, false),
-        });
-      } else {
-        // check to checked
-        onChange({
-          ...query,
-          conditions: updateUnloadEvaluatorConditions(conditions, {}, true),
-        });
-      }
-    };
-    return (
-      <>
-        <InlineFieldRow>
-          <Stack direction="row" gap={2} alignItems="center">
-            <Switch value={hasHysteresis} onChange={onHysteresisCheckChange} />
-            Custom recovery threshold
-          </Stack>
-        </InlineFieldRow>
-        {hasHysteresis && (
-          <RecoveryThresholdRow
-            isRange={isRange}
-            conditions={conditions}
-            condition={condition}
-            labelWidth={labelWidth}
-            onChange={onChange}
-            query={query}
-            onError={onError}
-          />
-        )}
-      </>
-    );
-  };
+      const onHysteresisCheckChange = (event: FormEvent<HTMLInputElement>) => {
+        if (!event.currentTarget.checked) {
+          onError && onError(undefined); // clear error
+          // change to not checked
+          onChange({
+            ...query,
+            conditions: updateUnloadEvaluatorConditions(conditions, { params: [] }, false),
+          });
+        } else {
+          // check to checked
+          onChange({
+            ...query,
+            conditions: updateUnloadEvaluatorConditions(conditions, {}, true),
+          });
+        }
+      };
+      return (
+        <>
+          <InlineFieldRow>
+            <Stack direction="row" gap={2} alignItems="center">
+              <Switch value={hasHysteresis} onChange={onHysteresisCheckChange} />
+              Custom recovery threshold
+            </Stack>
+          </InlineFieldRow>
+          {hasHysteresis && (
+            <RecoveryThresholdRow
+              isRange={isRange}
+              conditions={conditions}
+              condition={condition}
+              labelWidth={labelWidth}
+              onChange={onChange}
+              query={query}
+              onError={onError}
+            />
+          )}
+        </>
+      );
+    }
+  );
+
+  HysteresisSection.displayName = 'HysteresisSection';
 
   return (
     <>
@@ -266,7 +271,7 @@ interface RecoveryThresholdRowProps {
   labelWidth: number | 'auto';
   onChange: (query: ExpressionQuery) => void;
   query: ExpressionQuery;
-  onError?: (error: string) => void;
+  onError?: (error: string | undefined) => void;
 }
 
 function RecoveryThresholdRow({
@@ -287,29 +292,36 @@ function RecoveryThresholdRow({
       : [...defaultEvaluator.evaluator.params]; // if there is no unload evaluator, we use the default evaluator params
     newParams[index] = newValue;
 
+    const newConditions = updateUnloadEvaluatorConditions(conditions, { params: newParams }, true);
+    const error = isInvalid(newConditions[0]);
+    // check if is valid for new unload evaluator
+    const { errorMsg: invalidErrorMsg, errorMsgFrom, errorMsgTo } = error ?? {};
+    const errorMsg = invalidErrorMsg || errorMsgFrom || errorMsgTo;
+    onError && onError(errorMsg);
     onChange({
       ...query,
-      conditions: updateUnloadEvaluatorConditions(conditions, { params: newParams }, true),
+      conditions: newConditions,
     });
   };
-  const isInvalid = (condition: ClassicCondition, paramIndex = 0) => {
-    if (condition.unloadEvaluator?.params[paramIndex] === undefined) {
-      return { error: true, errorMsg: 'This value cannot be empty' };
+
+  const isInvalid = (condition: ClassicCondition) => {
+    if (condition.unloadEvaluator?.params[0] === undefined) {
+      return { errorMsg: 'This value cannot be empty' };
     }
     // evaluator is above, unload evaluator value should be
     if (condition.evaluator?.type === EvalFunction.IsAbove) {
-      if (condition.unloadEvaluator?.params[paramIndex] > condition.evaluator.params[paramIndex]) {
+      if (condition.unloadEvaluator?.params[0] > condition.evaluator.params[0]) {
         return {
-          errorMsg: `Enter a number less than or equal to ${condition.evaluator.params[paramIndex]}`,
+          errorMsg: `Enter a number less than or equal to ${condition.evaluator.params[0]}`,
         };
       }
       return;
     }
     // evaluator is below, unload evaluator value should be
     if (condition.evaluator?.type === EvalFunction.IsBelow) {
-      if (condition.unloadEvaluator?.params[paramIndex] < condition.evaluator.params[paramIndex]) {
+      if (condition.unloadEvaluator?.params[0] < condition.evaluator.params[0]) {
         return {
-          errorMsg: `Enter a number more than or equal to ${condition.evaluator.params[paramIndex]}`,
+          errorMsg: `Enter a number more than or equal to ${condition.evaluator.params[0]}`,
         };
       }
       return;
@@ -319,7 +331,7 @@ function RecoveryThresholdRow({
       // first param
       if (condition.unloadEvaluator?.params[0] < condition.evaluator.params[0]) {
         return {
-          errorMsgFrom: `Enter a number more than or equal to${condition.evaluator.params[0]}`,
+          errorMsgFrom: `Enter a number more than or equal to ${condition.evaluator.params[0]}`,
         };
       }
       // second param
@@ -334,7 +346,7 @@ function RecoveryThresholdRow({
     if (condition.evaluator?.type === EvalFunction.IsWithinRange) {
       // first param
       if (condition.unloadEvaluator?.params[0] > condition.evaluator.params[0]) {
-        return { errorMsgFrom: `Enter a number less than or equal to${condition.evaluator.params[0]}` };
+        return { errorMsgFrom: `Enter a number less than or equal to ${condition.evaluator.params[0]}` };
       }
 
       // second param
@@ -347,12 +359,9 @@ function RecoveryThresholdRow({
     return;
   };
 
-  const error = useMemo(() => isInvalid(condition), [condition]);
-  const { errorMsg: invalidErrorMsg, errorMsgFrom, errorMsgTo } = error ?? {};
+  const error = isInvalid(condition);
 
-  useEffect(() => {
-    invalidErrorMsg && onError?.(invalidErrorMsg);
-  }, [invalidErrorMsg, onError]);
+  const { errorMsg: invalidErrorMsg, errorMsgFrom, errorMsgTo } = error ?? {};
 
   if (isRange) {
     if (condition.evaluator.type === EvalFunction.IsWithinRange) {
@@ -365,8 +374,7 @@ function RecoveryThresholdRow({
                   type="number"
                   width={10}
                   onChange={(event) => onUnloadValueChange(event, 0)}
-                  defaultValue={condition.evaluator.params[0]}
-                  value={condition.unloadEvaluator?.params[0]}
+                  defaultValue={condition.unloadEvaluator?.params[0]}
                 />
               </InlineField>
               <div className={styles.button}>TO</div>
@@ -375,8 +383,7 @@ function RecoveryThresholdRow({
                   type="number"
                   width={10}
                   onChange={(event) => onUnloadValueChange(event, 1)}
-                  defaultValue={condition.evaluator.params[1]}
-                  value={condition.unloadEvaluator?.params[1]}
+                  defaultValue={condition.unloadEvaluator?.params[1]}
                 />
               </InlineField>
             </Stack>
@@ -386,15 +393,14 @@ function RecoveryThresholdRow({
     } else {
       return (
         <InlineFieldRow>
-          <InlineField label="Stop alerting when inside range" labelWidth={labelWidth}>
+          <InlineField label="Stop alerting when inside range" labelWidth={labelWidth} className={styles.range}>
             <Stack direction="row">
               <InlineField invalid={Boolean(errorMsgFrom)} error={errorMsgFrom}>
                 <Input
                   type="number"
                   width={10}
                   onChange={(event) => onUnloadValueChange(event, 0)}
-                  defaultValue={condition.evaluator.params[0]}
-                  value={condition.unloadEvaluator?.params[0]}
+                  defaultValue={condition.unloadEvaluator?.params[0]}
                 />
               </InlineField>
               <div className={styles.button}>TO</div>
@@ -403,8 +409,7 @@ function RecoveryThresholdRow({
                   type="number"
                   width={10}
                   onChange={(event) => onUnloadValueChange(event, 1)}
-                  defaultValue={condition.evaluator.params[1]}
-                  value={condition.unloadEvaluator?.params[1]}
+                  defaultValue={condition.unloadEvaluator?.params[1]}
                 />
               </InlineField>
             </Stack>
@@ -426,8 +431,7 @@ function RecoveryThresholdRow({
               type="number"
               width={10}
               onChange={(event) => onUnloadValueChange(event, 0)}
-              defaultValue={conditions[0].evaluator.params[0] || 0}
-              value={condition.unloadEvaluator?.params[0]}
+              defaultValue={condition.unloadEvaluator?.params[0]}
             />
           </InlineField>
         </InlineFieldRow>
@@ -445,8 +449,7 @@ function RecoveryThresholdRow({
               type="number"
               width={10}
               onChange={(event) => onUnloadValueChange(event, 0)}
-              defaultValue={conditions[0].evaluator.params[0] || 0}
-              value={condition.unloadEvaluator?.params[0]}
+              defaultValue={condition.unloadEvaluator?.params[0]}
             />
           </InlineField>
         </InlineFieldRow>
@@ -477,4 +480,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: 0 ${theme.spacing(1)};
     background-color: ${theme.colors.background.primary};
   `,
+  range: css({
+    width: 'min-content',
+  }),
 });

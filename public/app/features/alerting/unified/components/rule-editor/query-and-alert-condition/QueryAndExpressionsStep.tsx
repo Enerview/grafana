@@ -128,12 +128,13 @@ export const QueryAndExpressionsStep = ({ editingExistingRule }: Props) => {
     }
 
     const error = errorFromPreviewData(previewData) ?? errorFromCurrentCondition(previewData);
-
-    setError('condition', {
-      type: 'validation',
-      message: error?.message,
-    });
-  }, [queryPreviewData, getValues, setError, isGrafanaManagedType]);
+    if (error?.message) {
+      setError('condition', {
+        type: 'validation',
+        message: error?.message,
+      });
+    }
+  }, [queryPreviewData, getValues, setError, isGrafanaManagedType, type]);
 
   const handleSetCondition = useCallback(
     (refId: string | null) => {
