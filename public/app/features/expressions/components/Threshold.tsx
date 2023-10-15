@@ -52,7 +52,7 @@ export const Threshold = ({ labelWidth, onChange, refIds, query, onError }: Prop
 
     onChange({
       ...query,
-      conditions: updateEvaluatorConditions(conditions, { type }),
+      conditions: updateEvaluatorConditions(conditions, { type }, onError),
     });
   };
 
@@ -63,7 +63,7 @@ export const Threshold = ({ labelWidth, onChange, refIds, query, onError }: Prop
 
     onChange({
       ...query,
-      conditions: updateEvaluatorConditions(conditions, { params: newParams }),
+      conditions: updateEvaluatorConditions(conditions, { params: newParams }, onError),
     });
   };
 
@@ -183,7 +183,8 @@ function updateEvaluatorConditions(
   update: Partial<{
     params: number[];
     type: EvalFunction;
-  }>
+  }>,
+  onError?: (error: string | undefined) => void
 ): ClassicCondition[] {
   const hsyteresIsChecked = Boolean(conditions[0].unloadEvaluator);
 
@@ -201,6 +202,8 @@ function updateEvaluatorConditions(
     };
 
     const updateUnloadType = getUnloadEvaluatorTypeFromCondition({ ...conditions[0], evaluator: newEvaluator });
+    // set error to undefined when type is changed as we default to the new type that is valid
+    onError && onError(undefined); // clear error
 
     return [
       {
@@ -393,7 +396,7 @@ function RecoveryThresholdRow({
     } else {
       return (
         <InlineFieldRow>
-          <InlineField label="Stop alerting when inside range" labelWidth={labelWidth} className={styles.range}>
+          <InlineField label="Stop alerting when inside range" labelWidth={labelWidth}>
             <Stack direction="row">
               <InlineField invalid={Boolean(errorMsgFrom)} error={errorMsgFrom}>
                 <Input
