@@ -372,23 +372,27 @@ function RecoveryThresholdRow({
         <InlineFieldRow>
           <InlineField label="Stop alerting when outside range" labelWidth={labelWidth}>
             <Stack direction="row">
-              <InlineField invalid={Boolean(errorMsgFrom)} error={errorMsgFrom}>
-                <Input
-                  type="number"
-                  width={10}
-                  onChange={(event) => onUnloadValueChange(event, 0)}
-                  defaultValue={condition.unloadEvaluator?.params[0]}
-                />
-              </InlineField>
+              <div className={styles.range}>
+                <InlineField invalid={Boolean(errorMsgFrom)} error={errorMsgFrom}>
+                  <Input
+                    type="number"
+                    width={10}
+                    onChange={(event) => onUnloadValueChange(event, 0)}
+                    defaultValue={condition.unloadEvaluator?.params[0]}
+                  />
+                </InlineField>
+              </div>
               <div className={styles.button}>TO</div>
-              <InlineField invalid={Boolean(errorMsgTo)} error={errorMsgTo}>
-                <Input
-                  type="number"
-                  width={10}
-                  onChange={(event) => onUnloadValueChange(event, 1)}
-                  defaultValue={condition.unloadEvaluator?.params[1]}
-                />
-              </InlineField>
+              <div className={styles.range}>
+                <InlineField invalid={Boolean(errorMsgTo)} error={errorMsgTo}>
+                  <Input
+                    type="number"
+                    width={10}
+                    onChange={(event) => onUnloadValueChange(event, 1)}
+                    defaultValue={condition.unloadEvaluator?.params[1]}
+                  />
+                </InlineField>
+              </div>
             </Stack>
           </InlineField>
         </InlineFieldRow>
@@ -398,23 +402,28 @@ function RecoveryThresholdRow({
         <InlineFieldRow>
           <InlineField label="Stop alerting when inside range" labelWidth={labelWidth}>
             <Stack direction="row">
-              <InlineField invalid={Boolean(errorMsgFrom)} error={errorMsgFrom}>
-                <Input
-                  type="number"
-                  width={10}
-                  onChange={(event) => onUnloadValueChange(event, 0)}
-                  defaultValue={condition.unloadEvaluator?.params[0]}
-                />
-              </InlineField>
+              <div className={styles.range}>
+                <InlineField invalid={Boolean(errorMsgFrom)} error={errorMsgFrom}>
+                  <Input
+                    type="number"
+                    width={10}
+                    onChange={(event) => onUnloadValueChange(event, 0)}
+                    defaultValue={condition.unloadEvaluator?.params[0]}
+                  />
+                </InlineField>
+              </div>
+
               <div className={styles.button}>TO</div>
-              <InlineField invalid={Boolean(errorMsgTo)} error={errorMsgTo}>
-                <Input
-                  type="number"
-                  width={10}
-                  onChange={(event) => onUnloadValueChange(event, 1)}
-                  defaultValue={condition.unloadEvaluator?.params[1]}
-                />
-              </InlineField>
+              <div className={styles.range}>
+                <InlineField invalid={Boolean(errorMsgTo)} error={errorMsgTo}>
+                  <Input
+                    type="number"
+                    width={10}
+                    onChange={(event) => onUnloadValueChange(event, 1)}
+                    defaultValue={condition.unloadEvaluator?.params[1]}
+                  />
+                </InlineField>
+              </div>
             </Stack>
           </InlineField>
         </InlineFieldRow>
