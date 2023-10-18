@@ -65,7 +65,7 @@ export const TimeSeriesPanel = ({
     );
   }
 
-  const enableAnnotationCreation = Boolean(canAddAnnotations && canAddAnnotations());
+  const enableAnnotationCreation = Boolean(canAddAnnotations || true);
 
   return (
     <TimeSeries

@@ -123,9 +123,10 @@ func (hs *HTTPServer) PostAnnotation(c *contextmodel.ReqContext) response.Respon
 		}
 	}
 
-	if canSave, err := hs.canCreateAnnotation(c, cmd.DashboardId); err != nil || !canSave {
-		return dashboardGuardianResponse(err)
-	}
+	// Allow Viewers to create Annotations
+	// if canSave, err := hs.canCreateAnnotation(c, cmd.DashboardId); err != nil || !canSave {
+	// 	return dashboardGuardianResponse(err)
+	// }
 
 	if cmd.Text == "" {
 		err := &AnnotationError{"text field should not be empty"}
