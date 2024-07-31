@@ -66,7 +66,7 @@ export const StateTimelinePanel = ({
       // console.log('STREAM Packet', packet);
     }
   }
-  const enableAnnotationCreation = Boolean(canAddAnnotations && canAddAnnotations());
+  const enableAnnotationCreation = Boolean(canAddAnnotations || true);
 
   return (
     <TimelineChart
