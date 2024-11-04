@@ -39,7 +39,7 @@ export const StatusHistoryPanel = ({
   const { sync, eventsScope, canAddAnnotations, dataLinkPostProcessor, eventBus } = usePanelContext();
   const cursorSync = sync?.() ?? DashboardCursorSync.Off;
 
-  const enableAnnotationCreation = Boolean(canAddAnnotations && canAddAnnotations());
+  const enableAnnotationCreation = Boolean(canAddAnnotations && true);
 
   const { frames, warn } = useMemo(
     () => prepareTimelineFields(data.series, false, timeRange, theme),
