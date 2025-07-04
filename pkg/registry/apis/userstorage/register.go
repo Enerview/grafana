@@ -98,7 +98,10 @@ func (b *UserStorageAPIBuilder) GetAuthorizer() authorizer.Authorizer {
 			switch attr.GetVerb() {
 			case "create":
 				// Create requests are validated later since we don't have access to the resource name
-				return authorizer.DecisionNoOpinion, "", nil
+				// NOTE: Changed DecisionNoOpinion to DecisionAllow to match main branch of Grafana.
+                // This change is not yet available in the latest releases, but already present in main.
+				// This avoids the userStorage error if the user is a Viewer.
+				return authorizer.DecisionAllow, "", nil
 			case "get", "delete", "patch", "update":
 				// Only allow the user to access their own settings
 				if !compareResourceNameAndUserUID(attr.GetName(), u) {
