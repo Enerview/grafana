@@ -1,19 +1,17 @@
 import { css, cx } from '@emotion/css';
 import classNames from 'classnames';
-import { PropsWithChildren, useEffect } from 'react';
+import { PropsWithChildren, useEffect, useMemo } from 'react';
 
-import { GrafanaTheme2 } from '@grafana/data';
+import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { locationSearchToObject, locationService } from '@grafana/runtime';
-import { useStyles2, LinkButton, useTheme2 } from '@grafana/ui';
+import { useStyles2, LinkButton } from '@grafana/ui';
 import { useGrafana } from 'app/core/context/GrafanaContext';
-import { useMediaQueryChange } from 'app/core/hooks/useMediaQueryChange';
+import { useResizableSidebar } from 'app/core/hooks/useResizableSidebar';
 import { Trans } from 'app/core/internationalization';
-import store from 'app/core/store';
 import { CommandPalette } from 'app/features/commandPalette/CommandPalette';
 import { ScopesDashboards, useScopesDashboardsState } from 'app/features/scopes';
 
 import { AppChromeMenu } from './AppChromeMenu';
-import { DOCKED_LOCAL_STORAGE_KEY, DOCKED_MENU_OPEN_LOCAL_STORAGE_KEY } from './AppChromeService';
 import { MegaMenu, MENU_WIDTH } from './MegaMenu/MegaMenu';
 import { useMegaMenuFocusHelper } from './MegaMenu/utils';
 import { ReturnToPrevious } from './ReturnToPrevious/ReturnToPrevious';
@@ -24,29 +22,32 @@ import { TOP_BAR_LEVEL_HEIGHT } from './types';
 export interface Props extends PropsWithChildren<{}> {}
 
 export function AppChrome({ children }: Props) {
-  const { chrome } = useGrafana();
+  const { sidebarWidth, resizerRef, handleMouseDown } = useResizableSidebar();
+  const { chrome, config } = useGrafana();
   const state = chrome.useState();
-  const theme = useTheme2();
-  const styles = useStyles2(getStyles, Boolean(state.actions));
 
-  const dockedMenuBreakpoint = theme.breakpoints.values.xl;
-  const dockedMenuLocalStorageState = store.getBool(DOCKED_LOCAL_STORAGE_KEY, true);
+  const isRoleHasEditPermission = useMemo(() => {
+    const userRole = config.bootData.user.orgRole;
+    if (!userRole) {
+      return false;
+    }
+
+    return [OrgRole.Admin, OrgRole.Editor].includes(userRole);
+  }, [config.bootData.user.orgRole]);
+
+  const hasAction = useMemo(
+    () => Boolean(state.actions) && isRoleHasEditPermission,
+    [isRoleHasEditPermission, state.actions]
+  );
+
+  const styles = useStyles2(getStyles, hasAction, sidebarWidth);
+
   const menuDockedAndOpen = !state.chromeless && state.megaMenuDocked && state.megaMenuOpen;
   const scopesDashboardsState = useScopesDashboardsState();
   const isScopesDashboardsOpen = Boolean(
     scopesDashboardsState?.isEnabled && scopesDashboardsState?.isPanelOpened && !scopesDashboardsState?.isReadOnly
   );
-  useMediaQueryChange({
-    breakpoint: dockedMenuBreakpoint,
-    onChange: (e) => {
-      if (dockedMenuLocalStorageState) {
-        chrome.setMegaMenuDocked(e.matches, false);
-        chrome.setMegaMenuOpen(
-          e.matches ? store.getBool(DOCKED_MENU_OPEN_LOCAL_STORAGE_KEY, state.megaMenuOpen) : false
-        );
-      }
-    },
-  });
+
   useMegaMenuFocusHelper(state.megaMenuOpen, state.megaMenuDocked);
 
   const contentClass = cx({
@@ -92,7 +93,13 @@ export function AppChrome({ children }: Props) {
             <Trans i18nKey="app-chrome.skip-content-button">Skip to main content</Trans>
           </LinkButton>
           {menuDockedAndOpen && (
-            <MegaMenu className={styles.dockedMegaMenu} onClose={() => chrome.setMegaMenuOpen(false)} />
+            <MegaMenu
+              className={styles.dockedMegaMenu}
+              onClose={() => chrome.setMegaMenuOpen(false)}
+              resizerRef={resizerRef}
+              handleMouseDown={handleMouseDown}
+              sidebarWidth={sidebarWidth}
+            />
           )}
           <header className={cx(styles.topNav, menuDockedAndOpen && styles.topNavMenuDocked)}>
             <SingleTopBar
@@ -101,7 +108,7 @@ export function AppChrome({ children }: Props) {
               onToggleMegaMenu={handleMegaMenu}
               onToggleKioskMode={chrome.onToggleKioskMode}
             />
-            {state.actions && <SingleTopBarActions>{state.actions}</SingleTopBarActions>}
+            {hasAction && <SingleTopBarActions>{state.actions}</SingleTopBarActions>}
           </header>
         </>
       )}
@@ -136,7 +143,8 @@ export function AppChrome({ children }: Props) {
   );
 }
 
-const getStyles = (theme: GrafanaTheme2, hasActions: boolean) => {
+const getStyles = (theme: GrafanaTheme2, hasActions: boolean, sidebarWidth: number) => {
+  const currentMenuWidth = sidebarWidth ? `${sidebarWidth}px` : MENU_WIDTH;
   return {
     content: css({
       display: 'flex',
@@ -151,16 +159,12 @@ const getStyles = (theme: GrafanaTheme2, hasActions: boolean) => {
     dockedMegaMenu: css({
       background: theme.colors.background.primary,
       borderRight: `1px solid ${theme.colors.border.weak}`,
-      display: 'none',
       height: '100%',
       position: 'fixed',
       top: 0,
-      width: MENU_WIDTH,
+      width: currentMenuWidth,
       zIndex: 2,
-
-      [theme.breakpoints.up('xl')]: {
-        display: 'block',
-      },
+      display: 'block',
     }),
     scopesDashboardsContainer: css({
       position: 'fixed',
@@ -168,7 +172,7 @@ const getStyles = (theme: GrafanaTheme2, hasActions: boolean) => {
       zIndex: 1,
     }),
     scopesDashboardsContainerDocked: css({
-      left: MENU_WIDTH,
+      left: currentMenuWidth,
     }),
     topNav: css({
       display: 'flex',
@@ -180,7 +184,7 @@ const getStyles = (theme: GrafanaTheme2, hasActions: boolean) => {
       flexDirection: 'column',
     }),
     topNavMenuDocked: css({
-      left: MENU_WIDTH,
+      left: currentMenuWidth,
     }),
     panes: css({
       display: 'flex',
@@ -189,10 +193,10 @@ const getStyles = (theme: GrafanaTheme2, hasActions: boolean) => {
       label: 'page-panes',
     }),
     pageContainerMenuDocked: css({
-      paddingLeft: MENU_WIDTH,
+      paddingLeft: currentMenuWidth,
     }),
     pageContainerMenuDockedScopes: css({
-      paddingLeft: `calc(${MENU_WIDTH} * 2)`,
+      paddingLeft: `calc(${currentMenuWidth} * 2)`,
     }),
     pageContainer: css({
       label: 'page-container',
