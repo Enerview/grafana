@@ -1,5 +1,5 @@
 import { throttle } from 'lodash';
-import { useState, useRef, useEffect, RefObject, useLayoutEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, RefObject, useMemo } from 'react';
 
 import store from '../store';
 
@@ -25,7 +25,6 @@ export function useResizableSidebar(): {
   const saveSidebarWidth = useMemo(
     () =>
       throttle((width: number) => {
-        console.log('store.set(DOCKED_MENU_SIZE_KEY, width) ->', width);
         store.set(DOCKED_MENU_SIZE_KEY, width);
       }, 500),
     []
