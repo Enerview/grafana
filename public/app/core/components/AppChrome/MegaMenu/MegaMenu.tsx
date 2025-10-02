@@ -133,6 +133,7 @@ export const MegaMenu = memo(
           </ScrollContainer>
         </nav>
         <div className={styles.resizer} id="resizer" ref={resizerRef} onMouseDown={() => handleMouseDown()}>
+          <div className={`${styles.resizerLine} resizer-line`}></div>
           <div className={`${styles.resizerSeparator} resizer-separator`} onMouseDown={() => handleMouseDown()}></div>
         </div>
       </div>
@@ -188,21 +189,37 @@ const getStyles = (theme: GrafanaTheme2, sidebarWidth: number) => {
       justifyContent: 'center',
       position: 'absolute',
       top: 0,
-      right: '-1px',
+      right: '-10px',
+      width: '13px',
+      height: '100%',
+      cursor: 'ew-resize',
+      background: 'transparent',
+      '&:hover .resizer-separator': {
+        background: `${theme.colors.text.link}`,
+      },
+      '&:hover .resizer-line': {
+        background: `${theme.colors.text.link}`,
+      },
+    }),
+    resizerLine: css({
+      flexDirection: 'column',
+      display: 'flex',
+      alignItems: 'end',
+      justifyContent: 'center',
+      position: 'absolute',
+      top: 0,
+      right: '10px',
       width: '1px',
       height: '100%',
       cursor: 'ew-resize',
       background: 'transparent',
-      '&:hover, &:hover .resizer-separator': {
-        background: `${theme.colors.text.link}`,
-      },
     }),
     resizerSeparator: css({
-      width: '4px',
+      width: '5px',
       height: '200px',
-      marginRight: '-2px',
-      background: `${theme.colors.border.strong}`,
-      borderRadius: `0px 5px 5px 0px`,
+      marginRight: '8px',
+      background: `${theme.colors.emphasize(theme.colors.background.secondary, 0.15)}`,
+      borderRadius: `2px`,
     }),
   };
 };
