@@ -113,7 +113,7 @@ export const MegaMenu = memo(
     };
 
     return (
-      <div data-testid={selectors.components.NavMenu.Menu} ref={ref} data-vit-test="hello" {...restProps}>
+      <div data-testid={selectors.components.NavMenu.Menu} ref={ref} {...restProps}>
         <MegaMenuHeader handleDockedMenu={handleDockedMenu} handleMegaMenu={handleMegaMenu} onClose={onClose} />
         <nav className={styles.content}>
           <ScrollContainer height="100%" overflowX="hidden" showScrollIndicators>
