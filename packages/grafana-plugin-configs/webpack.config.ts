@@ -32,7 +32,7 @@ function skipFiles(f: string): boolean {
 }
 
 type Env = {
-  [key: string]: true | string | Env;
+  [key: string]: true | string | Env | unknown;
 };
 
 const config = async (env: Env): Promise<Configuration> => {
