@@ -1,7 +1,7 @@
 import { css, cx } from '@emotion/css';
 import classNames from 'classnames';
 import { Resizable } from 're-resizable';
-import { PropsWithChildren, useEffect } from 'react';
+import { PropsWithChildren, useEffect, useMemo } from 'react';
 
 import { GrafanaTheme2 } from '@grafana/data';
 import { Trans } from '@grafana/i18n';
@@ -9,6 +9,8 @@ import { locationSearchToObject, locationService, useScopes } from '@grafana/run
 import { ErrorBoundaryAlert, getDragStyles, LinkButton, useStyles2 } from '@grafana/ui';
 import { useGrafana } from 'app/core/context/GrafanaContext';
 import { useMediaQueryMinWidth } from 'app/core/hooks/useMediaQueryMinWidth';
+import { useResizableSidebar } from 'app/core/hooks/useResizableSidebar';
+import { contextSrv } from 'app/core/services/context_srv';
 import store from 'app/core/store';
 import { CommandPalette } from 'app/features/commandPalette/CommandPalette';
 import { ScopesDashboards } from 'app/features/scopes/dashboards/ScopesDashboards';
@@ -30,14 +32,17 @@ import { getChromeHeaderLevelHeight, useChromeHeaderLevels } from './TopBar/useC
 export interface Props extends PropsWithChildren<{}> {}
 
 export function AppChrome({ children }: Props) {
+  const { sidebarWidth, resizerRef, handleMouseDown } = useResizableSidebar();
   const { chrome } = useGrafana();
+  const state = chrome.useState();
+  const hasAction = useMemo(() => Boolean(state.actions) && contextSrv.isEditor, [state.actions]);
+
   const {
     isOpen: isExtensionSidebarOpen,
     isEnabled: isExtensionSidebarEnabled,
     extensionSidebarWidth,
     setExtensionSidebarWidth,
   } = useExtensionSidebarContext();
-  const state = chrome.useState();
   const scopes = useScopes();
 
   const menuDockedAndOpen = !state.chromeless && state.megaMenuDocked && state.megaMenuOpen;
@@ -47,7 +52,12 @@ export function AppChrome({ children }: Props) {
 
   const headerLevels = useChromeHeaderLevels();
   const headerHeight = headerLevels * getChromeHeaderLevelHeight();
-  const styles = useStyles2(getStyles, headerHeight);
+
+  const currentHeaderHeight = useMemo(() => {
+    return hasAction ? headerHeight : getChromeHeaderLevelHeight();
+  }, [hasAction, headerHeight]);
+
+  const styles = useStyles2(getStyles, currentHeaderHeight, sidebarWidth);
   const contentSizeStyles = useStyles2(getContentSizeStyles, extensionSidebarWidth);
   const dragStyles = useStyles2(getDragStyles);
 
@@ -98,7 +108,13 @@ export function AppChrome({ children }: Props) {
             <Trans i18nKey="app-chrome.skip-content-button">Skip to main content</Trans>
           </LinkButton>
           {menuDockedAndOpen && (
-            <MegaMenu className={styles.dockedMegaMenu} onClose={() => chrome.setMegaMenuOpen(false)} />
+            <MegaMenu
+              className={styles.dockedMegaMenu}
+              onClose={() => chrome.setMegaMenuOpen(false)}
+              resizerRef={resizerRef}
+              handleMouseDown={handleMouseDown}
+              sidebarWidth={sidebarWidth}
+            />
           )}
           <header className={cx(styles.topNav, menuDockedAndOpen && styles.topNavMenuDocked)}>
             <SingleTopBar
@@ -109,7 +125,7 @@ export function AppChrome({ children }: Props) {
               actions={state.actions}
               breadcrumbActions={state.breadcrumbActions}
               scopes={scopes}
-              showToolbarLevel={headerLevels === 2}
+              showToolbarLevel={headerLevels === 2 && contextSrv.isEditor}
             />
           </header>
         </>
@@ -186,7 +202,8 @@ function useResponsiveDockedMegaMenu(chrome: AppChromeService) {
   }, [isLargeScreen, chrome, dockedMenuLocalStorageState]);
 }
 
-const getStyles = (theme: GrafanaTheme2, headerHeight: number) => {
+const getStyles = (theme: GrafanaTheme2, headerHeight: number, sidebarWidth: number) => {
+  const currentMenuWidth = sidebarWidth ? `${sidebarWidth}px` : MENU_WIDTH;
   return {
     content: css({
       label: 'page-content',
@@ -206,11 +223,10 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => {
     dockedMegaMenu: css({
       background: theme.colors.background.primary,
       borderRight: `1px solid ${theme.colors.border.weak}`,
-      display: 'none',
       height: '100%',
       position: 'fixed',
       top: 0,
-      width: MENU_WIDTH,
+      width: currentMenuWidth,
       zIndex: 2,
 
       [theme.breakpoints.up('xl')]: {
@@ -224,7 +240,7 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => {
       zIndex: 1,
     }),
     scopesDashboardsContainerDocked: css({
-      left: MENU_WIDTH,
+      left: currentMenuWidth,
     }),
     topNav: css({
       display: 'flex',
@@ -236,7 +252,7 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => {
       flexDirection: 'column',
     }),
     topNavMenuDocked: css({
-      left: MENU_WIDTH,
+      left: currentMenuWidth,
     }),
     panes: css({
       display: 'flex',
@@ -250,10 +266,10 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => {
       position: 'relative',
     }),
     pageContainerMenuDocked: css({
-      paddingLeft: MENU_WIDTH,
+      paddingLeft: currentMenuWidth,
     }),
     pageContainerMenuDockedScopes: css({
-      paddingLeft: `calc(${MENU_WIDTH} * 2)`,
+      paddingLeft: `calc(${currentMenuWidth} * 2)`,
     }),
     pageContainer: css({
       label: 'page-container',

@@ -1,12 +1,14 @@
 import { css, cx } from '@emotion/css';
-import React, { CSSProperties, useEffect } from 'react';
+import React, { CSSProperties, useEffect, useMemo } from 'react';
 
 import { GrafanaTheme2 } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { config, useChromeHeaderHeight } from '@grafana/runtime';
 import { useSceneObjectState } from '@grafana/scenes';
 import { ElementSelectionContext, useStyles2 } from '@grafana/ui';
+import { getChromeHeaderLevelHeight } from 'app/core/components/AppChrome/TopBar/useChromeHeaderHeight';
 import NativeScrollbar, { DivScrollElement } from 'app/core/components/NativeScrollbar';
+import { contextSrv } from 'app/core/services/context_srv';
 
 import { useSnappingSplitter } from '../panel-edit/splitter/useSnappingSplitter';
 import { DashboardScene } from '../scene/DashboardScene';
@@ -25,7 +27,14 @@ interface Props {
 export function DashboardEditPaneSplitter({ dashboard, isEditing, body, controls }: Props) {
   const headerHeight = useChromeHeaderHeight();
   const { editPane } = dashboard.state;
-  const styles = useStyles2(getStyles, headerHeight ?? 0);
+  const currentHeaderHeight = useMemo(() => {
+    if (!contextSrv.isEditor) {
+      return getChromeHeaderLevelHeight();
+    }
+    return headerHeight ?? 0;
+  }, [headerHeight]);
+
+  const styles = useStyles2(getStyles, currentHeaderHeight ?? 0);
   const [isCollapsed, setIsCollapsed] = useEditPaneCollapsed();
 
   if (!config.featureToggles.dashboardNewLayouts) {

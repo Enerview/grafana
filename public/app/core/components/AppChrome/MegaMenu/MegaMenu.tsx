@@ -1,6 +1,6 @@
 import { css } from '@emotion/css';
 import { DOMAttributes } from '@react-types/shared';
-import { memo, forwardRef, useCallback } from 'react';
+import { memo, forwardRef, useCallback, RefObject } from 'react';
 import { useLocation } from 'react-router-dom-v5-compat';
 
 import { GrafanaTheme2, NavModelItem } from '@grafana/data';
@@ -25,12 +25,15 @@ export const MENU_WIDTH = '300px';
 
 export interface Props extends DOMAttributes {
   onClose: () => void;
+  resizerRef: RefObject<HTMLDivElement>;
+  handleMouseDown: () => void;
+  sidebarWidth: number;
 }
 
 export const MegaMenu = memo(
-  forwardRef<HTMLDivElement, Props>(({ onClose, ...restProps }, ref) => {
+  forwardRef<HTMLDivElement, Props>(({ onClose, handleMouseDown, sidebarWidth, resizerRef, ...restProps }, ref) => {
     const navTree = useSelector((state) => state.navBarTree);
-    const styles = useStyles2(getStyles);
+    const styles = useStyles2(getStyles, sidebarWidth);
     const location = useLocation();
     const { chrome } = useGrafana();
     const dispatch = useDispatch();
@@ -134,6 +137,10 @@ export const MegaMenu = memo(
             </div>
           )}
         </nav>
+        <div className={styles.resizer} id="resizer" ref={resizerRef} onMouseDown={() => handleMouseDown()}>
+          <div className={`${styles.resizerLine} resizer-line`}></div>
+          <div className={`${styles.resizerSeparator} resizer-separator`} onMouseDown={() => handleMouseDown()}></div>
+        </div>
       </div>
     );
   })
@@ -141,7 +148,9 @@ export const MegaMenu = memo(
 
 MegaMenu.displayName = 'MegaMenu';
 
-const getStyles = (theme: GrafanaTheme2) => {
+const getStyles = (theme: GrafanaTheme2, sidebarWidth: number) => {
+  const currentMenuWidth = sidebarWidth ? `${sidebarWidth}px` : MENU_WIDTH;
+
   return {
     content: css({
       display: 'flex',
@@ -167,7 +176,7 @@ const getStyles = (theme: GrafanaTheme2) => {
       listStyleType: 'none',
       padding: theme.spacing(1, 1, 2, 1),
       [theme.breakpoints.up('md')]: {
-        width: MENU_WIDTH,
+        width: currentMenuWidth,
       },
     }),
     inviteNewMemberButton: css({
@@ -183,6 +192,45 @@ const getStyles = (theme: GrafanaTheme2) => {
       [theme.breakpoints.up('xl')]: {
         display: 'inline-flex',
       },
+    }),
+    resizer: css({
+      flexDirection: 'column',
+      display: 'flex',
+      alignItems: 'end',
+      justifyContent: 'center',
+      position: 'absolute',
+      top: 0,
+      right: '-10px',
+      width: '13px',
+      height: '100%',
+      cursor: 'ew-resize',
+      background: 'transparent',
+      '&:hover .resizer-separator': {
+        background: `${theme.colors.text.link}`,
+      },
+      '&:hover .resizer-line': {
+        background: `${theme.colors.text.link}`,
+      },
+    }),
+    resizerLine: css({
+      flexDirection: 'column',
+      display: 'flex',
+      alignItems: 'end',
+      justifyContent: 'center',
+      position: 'absolute',
+      top: 0,
+      right: '10px',
+      width: '1px',
+      height: '100%',
+      cursor: 'ew-resize',
+      background: 'transparent',
+    }),
+    resizerSeparator: css({
+      width: '5px',
+      height: '200px',
+      marginRight: '8px',
+      background: `${theme.colors.emphasize(theme.colors.background.secondary, 0.15)}`,
+      borderRadius: `2px`,
     }),
   };
 };
