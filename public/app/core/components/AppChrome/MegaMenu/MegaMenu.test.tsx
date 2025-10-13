@@ -32,7 +32,19 @@ const setup = () => {
   ];
 
   const store = configureStore({ navBarTree });
-  return render(<MegaMenu onClose={() => {}} />, { store });
+  const handleMouseDownDefault = jest.fn();
+  const sidebarWidthDefault = 300;
+  const resizerRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement>;
+
+  return render(
+    <MegaMenu
+      onClose={() => {}}
+      sidebarWidth={sidebarWidthDefault}
+      handleMouseDown={handleMouseDownDefault}
+      resizerRef={resizerRef}
+    />,
+    { store }
+  );
 };
 
 describe('MegaMenu', () => {
