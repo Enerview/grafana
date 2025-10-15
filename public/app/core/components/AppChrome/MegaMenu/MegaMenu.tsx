@@ -137,9 +137,23 @@ export const MegaMenu = memo(
             </div>
           )}
         </nav>
-        <div className={styles.resizer} id="resizer" ref={resizerRef} onMouseDown={() => handleMouseDown()}>
-          <div className={`${styles.resizerLine} resizer-line`}></div>
-          <div className={`${styles.resizerSeparator} resizer-separator`} onMouseDown={() => handleMouseDown()}></div>
+        <div
+          className={styles.resizer}
+          role="slider"
+          aria-valuenow={sidebarWidth}
+          tabIndex={0}
+          id="resizer"
+          ref={resizerRef}
+          onMouseDown={() => handleMouseDown()}
+        >
+          <div className={`${styles.resizerLine} resizer-line`} />
+          <div
+            className={`${styles.resizerSeparator} resizer-separator`}
+            role="slider"
+            aria-valuenow={sidebarWidth}
+            tabIndex={0}
+            onMouseDown={() => handleMouseDown()}
+          />
         </div>
       </div>
     );
@@ -199,8 +213,9 @@ const getStyles = (theme: GrafanaTheme2, sidebarWidth: number) => {
       alignItems: 'end',
       justifyContent: 'center',
       position: 'absolute',
+      zIndex: 1000,
       top: 0,
-      right: '-10px',
+      right: '-11px',
       width: '13px',
       height: '100%',
       cursor: 'ew-resize',
