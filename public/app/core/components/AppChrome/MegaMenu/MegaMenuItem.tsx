@@ -101,6 +101,7 @@ export function MegaMenuItem({ link, activeItem, isMinimizeDockedView, level = 0
             url={link.url}
             onPin={() => onPin(link)}
             isPinned={isPinned(link.url)}
+            title={isMinimizeDockedView ? link.text : undefined}
           >
             <div
               className={cx(styles.labelWrapper, {
