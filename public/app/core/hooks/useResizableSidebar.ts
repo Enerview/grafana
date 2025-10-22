@@ -43,24 +43,22 @@ export function useResizableSidebar(): {
 
   const getTopButtonsMenuElement = () => {
     const element = document.querySelector('[data-testid="data-testid variable-panel toggle-dock-menu-buttons"]');
-    return element as HTMLElement;
+    return element;
   };
 
   const getMainTreeView = () => {
     const element = document.querySelector('[data-testid="data-testid variable-panel table-view"]');
-    return element as HTMLElement;
+    return element;
   };
 
-  const hideElement = (element: HTMLElement) => {
-    const computedDisplay = getComputedStyle(element).display;
-    if (element && computedDisplay !== 'none') {
+  const hideElement = (element: Element | null) => {
+    if (element instanceof HTMLElement && getComputedStyle(element).display !== 'none') {
       element.style.display = 'none';
     }
   };
 
-  const showElement = (element: HTMLElement) => {
-    const computedDisplay = getComputedStyle(element).display;
-    if (element && computedDisplay === 'none') {
+  const showElement = (element: Element | null) => {
+    if (element instanceof HTMLElement && getComputedStyle(element).display === 'none') {
       element.style.display = 'block';
     }
   };

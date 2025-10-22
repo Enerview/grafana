@@ -52,14 +52,16 @@ export const MegaMenu = memo(
        *     After loading, the panel will find this element itself and enable its display.
        */
       const shouldDisplayVariableDockedIcon = useMemo(() => {
-        const element = document.querySelector(
-          '[data-testid="data-testid variable-panel table-view"]'
-        ) as HTMLElement | null;
-        const isNotDisplay = element?.style?.display === 'none';
+        const element = document.querySelector('[data-testid="data-testid variable-panel table-view"]');
 
-        if (sidebarWidth === DOCKED_COLLAPSED_WIDTH && element && isNotDisplay) {
+        if (
+          element instanceof HTMLElement &&
+          sidebarWidth === DOCKED_COLLAPSED_WIDTH &&
+          getComputedStyle(element).display === 'none'
+        ) {
           return true;
         }
+
         return false;
       }, [sidebarWidth]);
 
