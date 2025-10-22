@@ -158,7 +158,7 @@ export const MegaMenu = memo(
             >
               <Icon
                 name={'gf-layout-simple'}
-                size="xxl"
+                size="md"
                 title={t('navigation.docked.toggleVariable', 'Show variable panel')}
               />
             </div>
