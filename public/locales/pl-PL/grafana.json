@@ -9595,6 +9595,9 @@
     }
   },
   "navigation": {
+    "docked":{
+      "toggleVariable":"Pokaż panel zmiennych"
+    },
     "breadcrumbs": {
       "aria-label": "Ścieżka nawigacji"
     },

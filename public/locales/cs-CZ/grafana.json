@@ -9595,6 +9595,9 @@
     }
   },
   "navigation": {
+    "docked":{
+      "toggleVariable":"Zobrazit panel proměnných"
+    },
     "breadcrumbs": {
       "aria-label": "Drobečková navigace"
     },

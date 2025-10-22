@@ -9571,6 +9571,9 @@
     }
   },
   "navigation": {
+    "docked":{
+      "toggleVariable":"Show variable panel"
+    },
     "breadcrumbs": {
       "aria-label": "Breadcrumbs"
     },

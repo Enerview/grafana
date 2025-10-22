@@ -9508,6 +9508,9 @@
     }
   },
   "navigation": {
+    "docked":{
+      "toggleVariable":"変数パネルを表示"
+    },
     "breadcrumbs": {
       "aria-label": "パンくずリスト"
     },

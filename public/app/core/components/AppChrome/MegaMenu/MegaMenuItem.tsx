@@ -22,11 +22,12 @@ interface Props {
   level?: number;
   onPin: (item: NavModelItem) => void;
   isPinned: (id?: string) => boolean;
+  isMinimizeDockedView: boolean;
 }
 
 const MAX_DEPTH = 2;
 
-export function MegaMenuItem({ link, activeItem, level = 0, onClick, onPin, isPinned }: Props) {
+export function MegaMenuItem({ link, activeItem, isMinimizeDockedView, level = 0, onClick, onPin, isPinned }: Props) {
   const { chrome } = useGrafana();
   const state = chrome.useState();
   const menuIsDocked = state.megaMenuDocked;
@@ -38,7 +39,8 @@ export function MegaMenuItem({ link, activeItem, level = 0, onClick, onPin, isPi
     `grafana.navigation.expanded[${link.text}]`,
     Boolean(hasActiveChild)
   );
-  const showExpandButton = level < MAX_DEPTH && Boolean(linkHasChildren(link) || link.emptyMessage);
+  const showExpandButton =
+    level < MAX_DEPTH && Boolean(linkHasChildren(link) || link.emptyMessage) && !isMinimizeDockedView;
   const item = useRef<HTMLLIElement>(null);
 
   const styles = useStyles2(getStyles);
@@ -145,6 +147,7 @@ export function MegaMenuItem({ link, activeItem, level = 0, onClick, onPin, isPi
                   activeItem={activeItem}
                   onClick={onClick}
                   level={level + 1}
+                  isMinimizeDockedView={isMinimizeDockedView}
                   onPin={onPin}
                   isPinned={isPinned}
                 />

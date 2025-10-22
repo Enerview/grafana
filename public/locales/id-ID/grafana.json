@@ -9508,6 +9508,9 @@
     }
   },
   "navigation": {
+    "docked":{
+      "toggleVariable":"Tampilkan panel variabel"
+    },
     "breadcrumbs": {
       "aria-label": "Breadcrumb"
     },

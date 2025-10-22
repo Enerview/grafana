@@ -9508,6 +9508,9 @@
     }
   },
   "navigation": {
+    "docked":{
+      "toggleVariable":"顯示變數面板"
+    },
     "breadcrumbs": {
       "aria-label": "麵包屑"
     },

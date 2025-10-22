@@ -15,10 +15,11 @@ import { MegaMenu, MENU_WIDTH } from './MegaMenu/MegaMenu';
 interface Props {
   resizerRef: RefObject<HTMLDivElement>;
   handleMouseDown: () => void;
+  toggleSidebar: () => void;
   sidebarWidth: number;
 }
 
-export function AppChromeMenu({ handleMouseDown, sidebarWidth, resizerRef }: Props) {
+export function AppChromeMenu({ handleMouseDown, sidebarWidth, toggleSidebar, resizerRef }: Props) {
   const theme = useTheme2();
   const { chrome } = useGrafana();
   const state = chrome.useState();
@@ -70,6 +71,7 @@ export function AppChromeMenu({ handleMouseDown, sidebarWidth, resizerRef }: Pro
                   resizerRef={resizerRef}
                   handleMouseDown={handleMouseDown}
                   sidebarWidth={sidebarWidth}
+                  toggleSidebar={toggleSidebar}
                   {...overlayProps}
                   {...dialogProps}
                 />

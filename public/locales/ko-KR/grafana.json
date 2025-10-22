@@ -9508,6 +9508,9 @@
     }
   },
   "navigation": {
+    "docked":{
+      "toggleVariable":"변수 패널 표시"
+    },
     "breadcrumbs": {
       "aria-label": "브레드크럼"
     },

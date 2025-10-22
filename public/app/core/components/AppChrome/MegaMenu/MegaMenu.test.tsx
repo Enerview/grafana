@@ -33,6 +33,7 @@ const setup = () => {
 
   const store = configureStore({ navBarTree });
   const handleMouseDownDefault = jest.fn();
+  const toggleSidebar = jest.fn();
   const sidebarWidthDefault = 300;
   const resizerRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement>;
 
@@ -41,6 +42,7 @@ const setup = () => {
       onClose={() => {}}
       sidebarWidth={sidebarWidthDefault}
       handleMouseDown={handleMouseDownDefault}
+      toggleSidebar={toggleSidebar}
       resizerRef={resizerRef}
     />,
     { store }
