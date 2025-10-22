@@ -141,27 +141,6 @@ export const MegaMenu = memo(
         <div data-testid={selectors.components.NavMenu.Menu} ref={ref} {...restProps}>
           <MegaMenuHeader handleDockedMenu={handleDockedMenu} handleMegaMenu={handleMegaMenu} onClose={onClose} />
           <nav className={styles.content}>
-            <div
-              role="button"
-              tabIndex={0}
-              style={{
-                display: shouldDisplayVariableDockedIcon ? '' : 'none',
-              }}
-              className={styles.collapseButtonWrapper}
-              data-testid="data-testid mega-menu toggle-variable-panel-in-docked-menu"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  toggleSidebar();
-                }
-              }}
-              onClick={() => toggleSidebar()}
-            >
-              <Icon
-                name={'gf-layout-simple'}
-                size="md"
-                title={t('navigation.docked.toggleVariable', 'Show variable panel')}
-              />
-            </div>
             <ScrollContainer height="100%" overflowX="hidden" showScrollIndicators>
               <ul className={styles.itemList} aria-label={t('navigation.megamenu.list-label', 'Navigation')}>
                 {navItems.map((link, index) => (
@@ -176,6 +155,27 @@ export const MegaMenu = memo(
                   />
                 ))}
               </ul>
+              <div
+                role="button"
+                tabIndex={0}
+                style={{
+                  display: shouldDisplayVariableDockedIcon ? '' : 'none',
+                }}
+                className={styles.collapseButtonWrapper}
+                data-testid="data-testid mega-menu toggle-variable-panel-in-docked-menu"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    toggleSidebar();
+                  }
+                }}
+                onClick={() => toggleSidebar()}
+              >
+                <Icon
+                  name={'gf-layout-simple'}
+                  size="md"
+                  title={t('navigation.docked.toggleVariable', 'Show variable panel')}
+                />
+              </div>
             </ScrollContainer>
             {shouldRenderInviteUserButton && (
               <div className={styles.inviteNewMemberButton}>
@@ -237,7 +237,7 @@ const getStyles = (theme: GrafanaTheme2, sidebarWidth: number) => {
       display: 'flex',
       flexDirection: 'column',
       listStyleType: 'none',
-      padding: theme.spacing(1, 1, 2, 1),
+      padding: theme.spacing(1, 1, 0.5, 1),
       [theme.breakpoints.up('md')]: {
         width: currentMenuWidth,
       },
@@ -306,7 +306,8 @@ const getStyles = (theme: GrafanaTheme2, sidebarWidth: number) => {
       justifyContent: 'center',
       width: theme.spacing(3),
       flexShrink: 0,
-      marginTop: theme.spacing(2),
+      marginTop: theme.spacing(0.5),
+      padding: theme.spacing(0.5, 1, 2, 1),
       marginLeft: theme.spacing(1.5),
     }),
   };
