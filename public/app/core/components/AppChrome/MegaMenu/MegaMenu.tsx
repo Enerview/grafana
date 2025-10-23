@@ -164,7 +164,7 @@ export const MegaMenu = memo(
                 <div className={styles.buttonToggleWrapper}>
                   <IconButton
                     aria-label={t('navigation.docked.openMenu', 'Open Menu')}
-                    name={'gf-layout-simple'}
+                    name="arrow-from-right"
                     size="lg"
                     onClick={() => toggleSidebar()}
                     title={t('navigation.docked.openMenu', 'Open Menu')}
