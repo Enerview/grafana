@@ -106,6 +106,7 @@ export function useResizableSidebar(): {
 
         hideElement(findElementByTestId('data-testid variable-panel toggle-dock-menu-buttons'));
         hideElement(findElementByTestId('data-testid variable-panel table-view'));
+        showElement(findElementByTestId('data-testid mega-menu toggle-variable-panel-in-docked-menu'));
       }
 
       if (mouseWidth > maxWidth) {
