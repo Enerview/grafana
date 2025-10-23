@@ -191,7 +191,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
         display: 'block',
         height: theme.spacing(4),
         position: 'absolute',
-        transform: 'translateX(-50%)',
+        transform: 'translateX(-60%)',
         width: '4px',
       },
     },
