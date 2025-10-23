@@ -199,7 +199,7 @@ const getStyles = (theme: GrafanaTheme2, sidebarWidth: number) => {
       display: 'flex',
       flexDirection: 'column',
       listStyleType: 'none',
-      padding: theme.spacing(1, 1, 0.5, 1),
+      padding: theme.spacing(1, 1, 0.5, 0.75),
       [theme.breakpoints.up('md')]: {
         width: currentMenuWidth,
       },
@@ -272,34 +272,6 @@ const getStyles = (theme: GrafanaTheme2, sidebarWidth: number) => {
       marginRight: '8px',
       background: `${theme.colors.emphasize(theme.colors.background.secondary, 0.15)}`,
       borderRadius: `2px`,
-    }),
-    collapseButtonWrapper: css({
-      display: 'flex',
-      justifyContent: 'center',
-      width: theme.spacing(3),
-      flexShrink: 0,
-      marginTop: theme.spacing(0.5),
-      padding: theme.spacing(0.5, 1, 2, 1),
-      marginLeft: theme.spacing(1.5),
-    }),
-    buttonToggleWrapper: css({
-      width: '30px',
-      height: '30px',
-      marginLeft: theme.spacing(0.5),
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'end',
-      '&:hover': {
-        background: `${theme.colors.action.selected}`,
-      },
-    }),
-    buttonToggle: css({
-      '&:hover': {
-        background: 'none',
-        '&::before': {
-          background: 'none',
-        },
-      },
     }),
   };
 };
