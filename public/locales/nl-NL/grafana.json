@@ -9538,7 +9538,7 @@
   },
   "navigation": {
     "docked":{
-      "toggleVariable":"Variabelenpaneel weergeven"
+      "openMenu":"Menu openen"
     },
     "breadcrumbs": {
       "aria-label": "Kruimelpad"

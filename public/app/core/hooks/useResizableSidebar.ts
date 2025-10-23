@@ -41,24 +41,18 @@ export function useResizableSidebar(): {
     [saveSidebarWidthInStore]
   );
 
-  const getTopButtonsMenuElement = () => {
-    const element = document.querySelector('[data-testid="data-testid variable-panel toggle-dock-menu-buttons"]');
-    return element;
+  const findElementByTestId = (testId: string): HTMLElement | null => {
+    return document.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
   };
 
-  const getMainTreeView = () => {
-    const element = document.querySelector('[data-testid="data-testid variable-panel table-view"]');
-    return element;
-  };
-
-  const hideElement = (element: Element | null) => {
-    if (element instanceof HTMLElement && getComputedStyle(element).display !== 'none') {
+  const hideElement = (element: HTMLElement | null) => {
+    if (element && getComputedStyle(element).display !== 'none') {
       element.style.display = 'none';
     }
   };
 
-  const showElement = (element: Element | null) => {
-    if (element instanceof HTMLElement && getComputedStyle(element).display === 'none') {
+  const showElement = (element: HTMLElement | null) => {
+    if (element && getComputedStyle(element).display === 'none') {
       element.style.display = 'block';
     }
   };
@@ -69,8 +63,9 @@ export function useResizableSidebar(): {
        * We can hide show elements from Variable panel directly here
        * no need add logic to observe resize on sidebar inside Variable panel
        */
-      hideElement(getTopButtonsMenuElement());
-      hideElement(getMainTreeView());
+      hideElement(findElementByTestId('data-testid variable-panel toggle-dock-menu-buttons'));
+      hideElement(findElementByTestId('data-testid variable-panel table-view'));
+
       saveSidebarWidth(DOCKED_COLLAPSED_WIDTH);
       return;
     }
@@ -80,9 +75,9 @@ export function useResizableSidebar(): {
        * We can hide show elements from Variable panel directly here
        * no need add logic to observe resize on sidebar inside Variable panel
        */
-      showElement(getTopButtonsMenuElement());
-      showElement(getMainTreeView());
-
+      showElement(findElementByTestId('data-testid variable-panel toggle-dock-menu-buttons'));
+      showElement(findElementByTestId('data-testid variable-panel table-view'));
+      hideElement(findElementByTestId('data-testid mega-menu toggle-variable-panel-in-docked-menu'));
       saveSidebarWidth(MENU_WIDTH);
       return;
     }
@@ -101,15 +96,16 @@ export function useResizableSidebar(): {
       if (mouseWidth < MENU_WIDTH) {
         newWidth = MENU_WIDTH;
 
-        showElement(getTopButtonsMenuElement());
-        showElement(getMainTreeView());
+        showElement(findElementByTestId('data-testid variable-panel toggle-dock-menu-buttons'));
+        showElement(findElementByTestId('data-testid variable-panel table-view'));
+        hideElement(findElementByTestId('data-testid mega-menu toggle-variable-panel-in-docked-menu'));
       }
 
       if (mouseWidth < COLLAPSE_THRESHOLD) {
         newWidth = DOCKED_COLLAPSED_WIDTH;
 
-        hideElement(getTopButtonsMenuElement());
-        hideElement(getMainTreeView());
+        hideElement(findElementByTestId('data-testid variable-panel toggle-dock-menu-buttons'));
+        hideElement(findElementByTestId('data-testid variable-panel table-view'));
       }
 
       if (mouseWidth > maxWidth) {

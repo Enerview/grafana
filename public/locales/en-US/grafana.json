@@ -9572,7 +9572,7 @@
   },
   "navigation": {
     "docked":{
-      "toggleVariable":"Show variable panel"
+      "openMenu":"Open Menu"
     },
     "breadcrumbs": {
       "aria-label": "Breadcrumbs"

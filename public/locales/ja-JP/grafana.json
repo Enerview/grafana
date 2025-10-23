@@ -9509,7 +9509,7 @@
   },
   "navigation": {
     "docked":{
-      "toggleVariable":"変数パネルを表示"
+      "openMenu":"メニューを開く"
     },
     "breadcrumbs": {
       "aria-label": "パンくずリスト"

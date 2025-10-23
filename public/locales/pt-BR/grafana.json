@@ -9538,7 +9538,7 @@
   },
   "navigation": {
     "docked":{
-      "toggleVariable":"Mostrar painel de variáveis"
+      "openMenu":"Abrir menu"
     },
     "breadcrumbs": {
       "aria-label": "Breadcrumbs"

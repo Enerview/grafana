@@ -1,4 +1,4 @@
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 import { DOMAttributes } from '@react-types/shared';
 import { memo, forwardRef, useCallback, RefObject, useMemo } from 'react';
 import { useLocation } from 'react-router-dom-v5-compat';
@@ -7,7 +7,7 @@ import { GrafanaTheme2, NavModelItem } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { t } from '@grafana/i18n';
 import { config, reportInteraction } from '@grafana/runtime';
-import { Icon, ScrollContainer, useStyles2 } from '@grafana/ui';
+import { IconButton, ScrollContainer, useStyles2 } from '@grafana/ui';
 import { useGrafana } from 'app/core/context/GrafanaContext';
 import { DOCKED_COLLAPSED_WIDTH } from 'app/core/hooks/useResizableSidebar';
 import { setBookmark } from 'app/core/reducers/navBarTree';
@@ -53,7 +53,6 @@ export const MegaMenu = memo(
        */
       const shouldDisplayVariableDockedIcon = useMemo(() => {
         const element = document.querySelector('[data-testid="data-testid variable-panel table-view"]');
-
         if (
           element instanceof HTMLElement &&
           sidebarWidth === DOCKED_COLLAPSED_WIDTH &&
@@ -156,25 +155,22 @@ export const MegaMenu = memo(
                 ))}
               </ul>
               <div
-                role="button"
-                tabIndex={0}
                 style={{
                   display: shouldDisplayVariableDockedIcon ? '' : 'none',
                 }}
-                className={styles.collapseButtonWrapper}
+                className={cx(styles.toggleContainer)}
                 data-testid="data-testid mega-menu toggle-variable-panel-in-docked-menu"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    toggleSidebar();
-                  }
-                }}
-                onClick={() => toggleSidebar()}
               >
-                <Icon
-                  name={'gf-layout-simple'}
-                  size="md"
-                  title={t('navigation.docked.toggleVariable', 'Show variable panel')}
-                />
+                <div className={styles.buttonToggleWrapper}>
+                  <IconButton
+                    aria-label={t('navigation.docked.openMenu', 'Open Menu')}
+                    name={'gf-layout-simple'}
+                    size="lg"
+                    onClick={() => toggleSidebar()}
+                    title={t('navigation.docked.openMenu', 'Open Menu')}
+                    className={styles.buttonToggle}
+                  />
+                </div>
               </div>
             </ScrollContainer>
             {shouldRenderInviteUserButton && (
@@ -238,6 +234,16 @@ const getStyles = (theme: GrafanaTheme2, sidebarWidth: number) => {
       flexDirection: 'column',
       listStyleType: 'none',
       padding: theme.spacing(1, 1, 0.5, 1),
+      [theme.breakpoints.up('md')]: {
+        width: currentMenuWidth,
+      },
+    }),
+    toggleContainer: css({
+      boxSizing: 'border-box',
+      display: 'flex',
+      flexDirection: 'column',
+      listStyleType: 'none',
+      padding: theme.spacing(1, 1, 0, 0.5),
       [theme.breakpoints.up('md')]: {
         width: currentMenuWidth,
       },
@@ -309,6 +315,25 @@ const getStyles = (theme: GrafanaTheme2, sidebarWidth: number) => {
       marginTop: theme.spacing(0.5),
       padding: theme.spacing(0.5, 1, 2, 1),
       marginLeft: theme.spacing(1.5),
+    }),
+    buttonToggleWrapper: css({
+      width: '30px',
+      height: '30px',
+      marginLeft: theme.spacing(0.5),
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'end',
+      '&:hover': {
+        background: `${theme.colors.action.selected}`,
+      },
+    }),
+    buttonToggle: css({
+      '&:hover': {
+        background: 'none',
+        '&::before': {
+          background: 'none',
+        },
+      },
     }),
   };
 };

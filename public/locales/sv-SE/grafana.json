@@ -9538,7 +9538,7 @@
   },
   "navigation": {
     "docked":{
-      "toggleVariable":"Visa variabelpanel"
+      "openMenu":"Öppna menyn"
     },
     "breadcrumbs": {
       "aria-label": "Brödsmulor"

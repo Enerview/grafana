@@ -82,7 +82,12 @@ export function MegaMenuItem({ link, activeItem, isMinimizeDockedView, level = 0
   }
 
   return (
-    <li ref={item} className={styles.listItem}>
+    <li
+      ref={item}
+      className={cx(styles.listItem, {
+        [styles.listItemHover]: isMinimizeDockedView,
+      })}
+    >
       <div
         className={cx(styles.menuItem, {
           [styles.menuItemWithIcon]: Boolean(level === 0 && iconElement),
@@ -176,6 +181,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flex: 1,
     maxWidth: '100%',
   }),
+  listItemHover: css({
+    '&:hover': {
+      background: `${theme.colors.action.selected}`,
+    },
+  }),
   menuItem: css({
     display: 'flex',
     alignItems: 'center',
@@ -215,6 +225,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flex: 1,
     height: '100%',
     minWidth: 0,
+
+    '&:hover': {
+      background: `${theme.colors.action.selected}`,
+    },
   }),
   labelWrapper: css({
     display: 'flex',

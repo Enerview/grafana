@@ -9509,7 +9509,7 @@
   },
   "navigation": {
     "docked":{
-      "toggleVariable":"Tampilkan panel variabel"
+      "openMenu":"Buka Menu"
     },
     "breadcrumbs": {
       "aria-label": "Breadcrumb"

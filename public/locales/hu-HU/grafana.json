@@ -9538,7 +9538,7 @@
   },
   "navigation": {
     "docked":{
-      "toggleVariable":"Változó panel megjelenítése"
+      "openMenu":"Menü megnyitása"
     },
     "breadcrumbs": {
       "aria-label": "Navigációs útkövetés"
