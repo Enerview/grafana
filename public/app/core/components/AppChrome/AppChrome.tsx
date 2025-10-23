@@ -32,7 +32,7 @@ import { getChromeHeaderLevelHeight, useChromeHeaderLevels } from './TopBar/useC
 export interface Props extends PropsWithChildren<{}> {}
 
 export function AppChrome({ children }: Props) {
-  const { sidebarWidth, resizerRef, handleMouseDown } = useResizableSidebar();
+  const { sidebarWidth, resizerRef, handleMouseDown, toggleSidebar } = useResizableSidebar();
   const { chrome } = useGrafana();
   const state = chrome.useState();
   const hasAction = useMemo(() => Boolean(state.actions) && contextSrv.isEditor, [state.actions]);
@@ -113,6 +113,7 @@ export function AppChrome({ children }: Props) {
               onClose={() => chrome.setMegaMenuOpen(false)}
               resizerRef={resizerRef}
               handleMouseDown={handleMouseDown}
+              toggleSidebar={toggleSidebar}
               sidebarWidth={sidebarWidth}
             />
           )}
@@ -170,7 +171,12 @@ export function AppChrome({ children }: Props) {
         </div>
       </div>
       {!state.chromeless && !state.megaMenuDocked && (
-        <AppChromeMenu resizerRef={resizerRef} handleMouseDown={handleMouseDown} sidebarWidth={sidebarWidth} />
+        <AppChromeMenu
+          resizerRef={resizerRef}
+          handleMouseDown={handleMouseDown}
+          toggleSidebar={toggleSidebar}
+          sidebarWidth={sidebarWidth}
+        />
       )}
       {!state.chromeless && <CommandPalette />}
       {shouldShowReturnToPrevious && state.returnToPrevious && (
