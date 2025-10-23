@@ -77,7 +77,7 @@ export function useResizableSidebar(): {
        */
       showElement(findElementByTestId('data-testid variable-panel toggle-dock-menu-buttons'));
       showElement(findElementByTestId('data-testid variable-panel table-view'));
-      hideElement(findElementByTestId('data-testid mega-menu toggle-variable-panel-in-docked-menu'));
+
       saveSidebarWidth(MENU_WIDTH);
       return;
     }
@@ -98,7 +98,6 @@ export function useResizableSidebar(): {
 
         showElement(findElementByTestId('data-testid variable-panel toggle-dock-menu-buttons'));
         showElement(findElementByTestId('data-testid variable-panel table-view'));
-        hideElement(findElementByTestId('data-testid mega-menu toggle-variable-panel-in-docked-menu'));
       }
 
       if (mouseWidth < COLLAPSE_THRESHOLD) {
@@ -106,7 +105,6 @@ export function useResizableSidebar(): {
 
         hideElement(findElementByTestId('data-testid variable-panel toggle-dock-menu-buttons'));
         hideElement(findElementByTestId('data-testid variable-panel table-view'));
-        showElement(findElementByTestId('data-testid mega-menu toggle-variable-panel-in-docked-menu'));
       }
 
       if (mouseWidth > maxWidth) {

@@ -9508,9 +9508,6 @@
     }
   },
   "navigation": {
-    "docked":{
-      "openMenu":"Buka Menu"
-    },
     "breadcrumbs": {
       "aria-label": "Breadcrumb"
     },

@@ -9595,9 +9595,6 @@
     }
   },
   "navigation": {
-    "docked":{
-      "openMenu":"Открыть меню"
-    },
     "breadcrumbs": {
       "aria-label": "Навигационная цепочка"
     },

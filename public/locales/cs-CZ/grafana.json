@@ -9595,9 +9595,6 @@
     }
   },
   "navigation": {
-    "docked":{
-      "openMenu":"Otevřít nabídku"
-    },
     "breadcrumbs": {
       "aria-label": "Drobečková navigace"
     },

@@ -1,6 +1,7 @@
 import { css } from '@emotion/css';
 
 import { GrafanaTheme2 } from '@grafana/data';
+import { t } from '@grafana/i18n';
 import { Stack, ToolbarButton, useTheme2 } from '@grafana/ui';
 
 import { Branding } from '../../Branding/Branding';
@@ -11,12 +12,14 @@ export interface Props {
   handleMegaMenu: () => void;
   handleDockedMenu: () => void;
   onClose: () => void;
+  toggleSidebar: () => void;
+  isMinimizeDockedView: boolean;
 }
 
 export const DOCK_MENU_BUTTON_ID = 'dock-menu-button';
 export const MEGA_MENU_HEADER_TOGGLE_ID = 'mega-menu-header-toggle';
 
-export function MegaMenuHeader({ handleMegaMenu, handleDockedMenu, onClose }: Props) {
+export function MegaMenuHeader({ toggleSidebar, isMinimizeDockedView }: Props) {
   const theme = useTheme2();
 
   const styles = getStyles(theme);
@@ -24,7 +27,17 @@ export function MegaMenuHeader({ handleMegaMenu, handleDockedMenu, onClose }: Pr
   return (
     <div className={styles.header}>
       <Stack alignItems="center" minWidth={0} gap={0.25}>
-        <ToolbarButton narrow id={MEGA_MENU_HEADER_TOGGLE_ID} className={styles.logoButton}>
+        <ToolbarButton
+          onClick={toggleSidebar}
+          narrow
+          id={MEGA_MENU_HEADER_TOGGLE_ID}
+          className={styles.logoButton}
+          tooltip={
+            isMinimizeDockedView
+              ? t('navigation.megamenu.open', 'Open menu')
+              : t('navigation.megamenu.close', 'Close menu')
+          }
+        >
           <Branding.MenuLogo className={styles.img} />
         </ToolbarButton>
         <OrganizationSwitcher />
@@ -65,7 +78,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   logoButton: css({
     '&:hover': {
-      cursor: 'auto',
+      cursor: 'pointer',
     },
   }),
 });

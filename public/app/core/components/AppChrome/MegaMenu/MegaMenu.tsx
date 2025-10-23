@@ -1,15 +1,14 @@
-import { css, cx } from '@emotion/css';
+import { css } from '@emotion/css';
 import { DOMAttributes } from '@react-types/shared';
-import { memo, forwardRef, useCallback, RefObject, useMemo } from 'react';
+import { memo, forwardRef, useCallback, RefObject } from 'react';
 import { useLocation } from 'react-router-dom-v5-compat';
 
 import { GrafanaTheme2, NavModelItem } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { t } from '@grafana/i18n';
 import { config, reportInteraction } from '@grafana/runtime';
-import { IconButton, ScrollContainer, useStyles2 } from '@grafana/ui';
+import { ScrollContainer, useStyles2 } from '@grafana/ui';
 import { useGrafana } from 'app/core/context/GrafanaContext';
-import { DOCKED_COLLAPSED_WIDTH } from 'app/core/hooks/useResizableSidebar';
 import { setBookmark } from 'app/core/reducers/navBarTree';
 import { usePatchUserPreferencesMutation } from 'app/features/preferences/api/index';
 import { useDispatch, useSelector } from 'app/types/store';
@@ -42,27 +41,6 @@ export const MegaMenu = memo(
       const state = chrome.useState();
       const [patchPreferences] = usePatchUserPreferencesMutation();
       const pinnedItems = usePinnedItems();
-
-      /**
-       *
-       *  1) We need to check if docked elements in sidebar from variable panel
-       *  2) On initial load in minimize view we should render but not display it
-       *  3) on initial load display is being apply from Variable Panel After it loaded
-       *  4) The panel takes much longer to load than the Grafana of elements, so we just need to mount it and wait.
-       *     After loading, the panel will find this element itself and enable its display.
-       */
-      const shouldDisplayVariableDockedIcon = useMemo(() => {
-        const element = document.querySelector('[data-testid="data-testid variable-panel table-view"]');
-        if (
-          element instanceof HTMLElement &&
-          sidebarWidth === DOCKED_COLLAPSED_WIDTH &&
-          getComputedStyle(element).display === 'none'
-        ) {
-          return true;
-        }
-
-        return false;
-      }, [sidebarWidth]);
 
       // Remove profile + help from tree
       const navItems = navTree
@@ -138,7 +116,13 @@ export const MegaMenu = memo(
 
       return (
         <div data-testid={selectors.components.NavMenu.Menu} ref={ref} {...restProps}>
-          <MegaMenuHeader handleDockedMenu={handleDockedMenu} handleMegaMenu={handleMegaMenu} onClose={onClose} />
+          <MegaMenuHeader
+            handleDockedMenu={handleDockedMenu}
+            handleMegaMenu={handleMegaMenu}
+            onClose={onClose}
+            toggleSidebar={toggleSidebar}
+            isMinimizeDockedView={sidebarWidth < MENU_WIDTH}
+          />
           <nav className={styles.content}>
             <ScrollContainer height="100%" overflowX="hidden" showScrollIndicators>
               <ul className={styles.itemList} aria-label={t('navigation.megamenu.list-label', 'Navigation')}>
@@ -154,24 +138,6 @@ export const MegaMenu = memo(
                   />
                 ))}
               </ul>
-              <div
-                style={{
-                  display: shouldDisplayVariableDockedIcon ? '' : 'none',
-                }}
-                className={cx(styles.toggleContainer)}
-                data-testid="data-testid mega-menu toggle-variable-panel-in-docked-menu"
-              >
-                <div className={styles.buttonToggleWrapper}>
-                  <IconButton
-                    aria-label={t('navigation.docked.openMenu', 'Open Menu')}
-                    name="arrow-from-right"
-                    size="lg"
-                    onClick={() => toggleSidebar()}
-                    title={t('navigation.docked.openMenu', 'Open Menu')}
-                    className={styles.buttonToggle}
-                  />
-                </div>
-              </div>
             </ScrollContainer>
             {shouldRenderInviteUserButton && (
               <div className={styles.inviteNewMemberButton}>

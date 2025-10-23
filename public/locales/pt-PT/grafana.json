@@ -9537,9 +9537,6 @@
     }
   },
   "navigation": {
-    "docked":{
-      "openMenu":"Abrir menu"
-    },
     "breadcrumbs": {
       "aria-label": "Ligações de navegação"
     },

@@ -9537,9 +9537,6 @@
     }
   },
   "navigation": {
-    "docked":{
-      "openMenu":"Menüyü aç"
-    },
     "breadcrumbs": {
       "aria-label": "İçerik Haritaları"
     },
