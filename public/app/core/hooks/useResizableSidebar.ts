@@ -13,7 +13,8 @@ export function useResizableSidebar(): {
   sidebarWidth: number;
   resizerRef: RefObject<HTMLDivElement>;
   handleMouseDown: () => void;
-  toggleSidebar: () => void;
+  toggleSidebar: (isMinimized?: boolean) => void;
+  isMinimized: boolean;
 } {
   const [sidebarWidth, setSidebarWidth] = useState(MENU_WIDTH);
   const resizerRef = useRef<HTMLDivElement>(null);
@@ -41,47 +42,19 @@ export function useResizableSidebar(): {
     [saveSidebarWidthInStore]
   );
 
-  const findElementByTestId = (testId: string): HTMLElement | null => {
-    return document.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
-  };
+  const toggleSidebar = useCallback(
+    (isMinimized?: boolean) => {
+      const minimized = isMinimized !== undefined ? isMinimized : sidebarWidth > DOCKED_COLLAPSED_WIDTH;
 
-  const hideElement = (element: HTMLElement | null) => {
-    if (element && getComputedStyle(element).display !== 'none') {
-      element.style.display = 'none';
-    }
-  };
-
-  const showElement = (element: HTMLElement | null) => {
-    if (element && getComputedStyle(element).display === 'none') {
-      element.style.display = 'block';
-    }
-  };
-
-  const toggleSidebar = useCallback(() => {
-    if (sidebarWidth > DOCKED_COLLAPSED_WIDTH) {
-      /**
-       * We can hide show elements from Variable panel directly here
-       * no need add logic to observe resize on sidebar inside Variable panel
-       */
-      hideElement(findElementByTestId('data-testid variable-panel toggle-dock-menu-buttons'));
-      hideElement(findElementByTestId('data-testid variable-panel table-view'));
-
-      saveSidebarWidth(DOCKED_COLLAPSED_WIDTH);
-      return;
-    }
-
-    if (sidebarWidth === DOCKED_COLLAPSED_WIDTH) {
-      /**
-       * We can hide show elements from Variable panel directly here
-       * no need add logic to observe resize on sidebar inside Variable panel
-       */
-      showElement(findElementByTestId('data-testid variable-panel toggle-dock-menu-buttons'));
-      showElement(findElementByTestId('data-testid variable-panel table-view'));
+      if (minimized) {
+        saveSidebarWidth(DOCKED_COLLAPSED_WIDTH);
+        return;
+      }
 
       saveSidebarWidth(MENU_WIDTH);
-      return;
-    }
-  }, [saveSidebarWidth, sidebarWidth]);
+    },
+    [saveSidebarWidth, sidebarWidth]
+  );
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -95,16 +68,10 @@ export function useResizableSidebar(): {
 
       if (mouseWidth < MENU_WIDTH) {
         newWidth = MENU_WIDTH;
-
-        showElement(findElementByTestId('data-testid variable-panel toggle-dock-menu-buttons'));
-        showElement(findElementByTestId('data-testid variable-panel table-view'));
       }
 
       if (mouseWidth < COLLAPSE_THRESHOLD) {
         newWidth = DOCKED_COLLAPSED_WIDTH;
-
-        hideElement(findElementByTestId('data-testid variable-panel toggle-dock-menu-buttons'));
-        hideElement(findElementByTestId('data-testid variable-panel table-view'));
       }
 
       if (mouseWidth > maxWidth) {
@@ -141,5 +108,5 @@ export function useResizableSidebar(): {
     }
   }, []);
 
-  return { sidebarWidth, resizerRef, handleMouseDown, toggleSidebar };
+  return { sidebarWidth, resizerRef, handleMouseDown, isMinimized: sidebarWidth < 300, toggleSidebar };
 }

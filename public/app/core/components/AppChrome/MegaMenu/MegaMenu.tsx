@@ -23,16 +23,16 @@ import { enrichWithInteractionTracking, findByUrl, getActiveItem } from './utils
 
 export const MENU_WIDTH = 300;
 export interface Props extends DOMAttributes {
-  onClose: () => void;
   resizerRef: RefObject<HTMLDivElement>;
   handleMouseDown: () => void;
-  toggleSidebar: () => void;
+  toggleSidebar: (isMinimized?: boolean) => void;
   sidebarWidth: number;
+  isMinimized: boolean;
 }
 
 export const MegaMenu = memo(
   forwardRef<HTMLDivElement, Props>(
-    ({ onClose, handleMouseDown, sidebarWidth, toggleSidebar, resizerRef, ...restProps }, ref) => {
+    ({ handleMouseDown, sidebarWidth, toggleSidebar, resizerRef, isMinimized, ...restProps }, ref) => {
       const navTree = useSelector((state) => state.navBarTree);
       const styles = useStyles2(getStyles, sidebarWidth);
       const location = useLocation();
@@ -70,17 +70,6 @@ export const MegaMenu = memo(
 
       const activeItem = getActiveItem(navItems, state.sectionNav.node, location.pathname);
 
-      const handleMegaMenu = () => {
-        chrome.setMegaMenuOpen(!state.megaMenuOpen);
-      };
-
-      const handleDockedMenu = () => {
-        chrome.setMegaMenuDocked(!state.megaMenuDocked);
-        if (state.megaMenuDocked) {
-          chrome.setMegaMenuOpen(false);
-        }
-      };
-
       const isPinned = useCallback(
         (url?: string) => {
           if (!url || !pinnedItems?.length) {
@@ -116,29 +105,24 @@ export const MegaMenu = memo(
 
       return (
         <div data-testid={selectors.components.NavMenu.Menu} ref={ref} {...restProps}>
-          <MegaMenuHeader
-            handleDockedMenu={handleDockedMenu}
-            handleMegaMenu={handleMegaMenu}
-            onClose={onClose}
-            toggleSidebar={toggleSidebar}
-            isMinimizeDockedView={sidebarWidth < MENU_WIDTH}
-          />
+          <MegaMenuHeader toggleSidebar={toggleSidebar} isMinimizeDockedView={isMinimized} />
           <nav className={styles.content}>
-            <ScrollContainer height="100%" overflowX="hidden" showScrollIndicators>
+            <ScrollContainer id="mega-menu-content" height="100%" overflowX="hidden" showScrollIndicators>
               <ul className={styles.itemList} aria-label={t('navigation.megamenu.list-label', 'Navigation')}>
-                {navItems.map((link, index) => (
+                {navItems.map((link) => (
                   <MegaMenuItem
                     key={link.text}
                     link={link}
-                    isMinimizeDockedView={sidebarWidth < MENU_WIDTH}
+                    isMinimizeDockedView={isMinimized}
                     isPinned={isPinned}
-                    onClick={state.megaMenuDocked ? undefined : onClose}
+                    onClick={state.megaMenuDocked ? undefined : () => toggleSidebar(true)}
                     activeItem={activeItem}
                     onPin={onPinItem}
                   />
                 ))}
               </ul>
             </ScrollContainer>
+            <div id="mega-menu-insertable-content" className={isMinimized ? 'minimized' : undefined} />
             {shouldRenderInviteUserButton && (
               <div className={styles.inviteNewMemberButton}>
                 <InviteUserButton />

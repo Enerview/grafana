@@ -9,10 +9,7 @@ import { OrganizationSwitcher } from '../OrganizationSwitcher/OrganizationSwitch
 import { getChromeHeaderLevelHeight } from '../TopBar/useChromeHeaderHeight';
 
 export interface Props {
-  handleMegaMenu: () => void;
-  handleDockedMenu: () => void;
-  onClose: () => void;
-  toggleSidebar: () => void;
+  toggleSidebar: (isMinimized?: boolean) => void;
   isMinimizeDockedView: boolean;
 }
 
@@ -28,7 +25,7 @@ export function MegaMenuHeader({ toggleSidebar, isMinimizeDockedView }: Props) {
     <div className={styles.header}>
       <Stack alignItems="center" minWidth={0} gap={0.25}>
         <ToolbarButton
-          onClick={toggleSidebar}
+          onClick={() => toggleSidebar(!isMinimizeDockedView)}
           narrow
           id={MEGA_MENU_HEADER_TOGGLE_ID}
           className={styles.logoButton}
@@ -42,6 +39,12 @@ export function MegaMenuHeader({ toggleSidebar, isMinimizeDockedView }: Props) {
         </ToolbarButton>
         <OrganizationSwitcher />
       </Stack>
+      <div
+        id="mega-menu-insertable-buttons"
+        style={{
+          display: isMinimizeDockedView ? 'none' : undefined,
+        }}
+      />
     </div>
   );
 }

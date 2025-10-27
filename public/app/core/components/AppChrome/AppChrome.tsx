@@ -5,7 +5,13 @@ import { PropsWithChildren, useEffect, useMemo } from 'react';
 
 import { GrafanaTheme2 } from '@grafana/data';
 import { Trans } from '@grafana/i18n';
-import { locationSearchToObject, locationService, useScopes } from '@grafana/runtime';
+import {
+  locationSearchToObject,
+  locationService,
+  useScopes,
+  getAppEvents,
+  MegaMenuToggleEvent,
+} from '@grafana/runtime';
 import { ErrorBoundaryAlert, getDragStyles, LinkButton, useStyles2 } from '@grafana/ui';
 import { useGrafana } from 'app/core/context/GrafanaContext';
 import { useMediaQueryMinWidth } from 'app/core/hooks/useMediaQueryMinWidth';
@@ -32,7 +38,7 @@ import { getChromeHeaderLevelHeight, useChromeHeaderLevels } from './TopBar/useC
 export interface Props extends PropsWithChildren<{}> {}
 
 export function AppChrome({ children }: Props) {
-  const { sidebarWidth, resizerRef, handleMouseDown, toggleSidebar } = useResizableSidebar();
+  const { sidebarWidth, resizerRef, handleMouseDown, toggleSidebar, isMinimized } = useResizableSidebar();
   const { chrome } = useGrafana();
   const state = chrome.useState();
   const hasAction = useMemo(() => Boolean(state.actions) && contextSrv.isEditor, [state.actions]);
@@ -93,6 +99,18 @@ export function AppChrome({ children }: Props) {
     chrome.setKioskModeFromUrl(queryParams.kiosk);
   }, [chrome, search]);
 
+  const appEvents = getAppEvents();
+
+  useEffect(() => {
+    const subscription = appEvents.getStream(MegaMenuToggleEvent).subscribe((event) => {
+      toggleSidebar(event.payload.isMinimized);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [appEvents, toggleSidebar]);
+
   // Chromeless routes are without topNav, mega menu, search & command palette
   // We check chromeless twice here instead of having a separate path so {children}
   // doesn't get re-mounted when chromeless goes from true to false.
@@ -110,11 +128,11 @@ export function AppChrome({ children }: Props) {
           {menuDockedAndOpen && (
             <MegaMenu
               className={styles.dockedMegaMenu}
-              onClose={() => chrome.setMegaMenuOpen(false)}
               resizerRef={resizerRef}
               handleMouseDown={handleMouseDown}
               toggleSidebar={toggleSidebar}
               sidebarWidth={sidebarWidth}
+              isMinimized={isMinimized}
             />
           )}
           <header className={cx(styles.topNav, menuDockedAndOpen && styles.topNavMenuDocked)}>
@@ -171,12 +189,7 @@ export function AppChrome({ children }: Props) {
         </div>
       </div>
       {!state.chromeless && !state.megaMenuDocked && (
-        <AppChromeMenu
-          resizerRef={resizerRef}
-          handleMouseDown={handleMouseDown}
-          toggleSidebar={toggleSidebar}
-          sidebarWidth={sidebarWidth}
-        />
+        <AppChromeMenu resizerRef={resizerRef} handleMouseDown={handleMouseDown} toggleSidebar={toggleSidebar} />
       )}
       {!state.chromeless && <CommandPalette />}
       {shouldShowReturnToPrevious && state.returnToPrevious && (
