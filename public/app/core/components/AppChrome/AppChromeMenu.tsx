@@ -16,10 +16,9 @@ interface Props {
   resizerRef: RefObject<HTMLDivElement>;
   handleMouseDown: () => void;
   toggleSidebar: () => void;
-  sidebarWidth: number;
 }
 
-export function AppChromeMenu({ handleMouseDown, sidebarWidth, toggleSidebar, resizerRef }: Props) {
+export function AppChromeMenu({ handleMouseDown, resizerRef }: Props) {
   const theme = useTheme2();
   const { chrome } = useGrafana();
   const state = chrome.useState();
@@ -66,12 +65,12 @@ export function AppChromeMenu({ handleMouseDown, sidebarWidth, toggleSidebar, re
               <FocusScope contain autoFocus restoreFocus>
                 <MegaMenu
                   className={styles.menu}
-                  onClose={onClose}
                   ref={ref}
                   resizerRef={resizerRef}
                   handleMouseDown={handleMouseDown}
-                  sidebarWidth={sidebarWidth}
-                  toggleSidebar={toggleSidebar}
+                  sidebarWidth={300}
+                  toggleSidebar={() => onClose()}
+                  isMinimized={false}
                   {...overlayProps}
                   {...dialogProps}
                 />

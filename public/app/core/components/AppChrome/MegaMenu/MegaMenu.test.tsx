@@ -39,11 +39,11 @@ const setup = () => {
 
   return render(
     <MegaMenu
-      onClose={() => {}}
       sidebarWidth={sidebarWidthDefault}
       handleMouseDown={handleMouseDownDefault}
       toggleSidebar={toggleSidebar}
       resizerRef={resizerRef}
+      isMinimized={false}
     />,
     { store }
   );
