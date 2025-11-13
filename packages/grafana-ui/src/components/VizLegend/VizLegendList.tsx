@@ -106,7 +106,7 @@ const getStyles = (theme: GrafanaTheme2) => {
       flexWrap: 'wrap',
       justifyContent: 'space-between',
       width: '100%',
-      padding: theme.spacing(0.5),
+      padding: theme.spacing(0.25),
       gap: '15px 25px',
     }),
     section: css({
