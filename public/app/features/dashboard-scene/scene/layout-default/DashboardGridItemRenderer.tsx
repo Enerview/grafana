@@ -1,5 +1,5 @@
 import { css } from '@emotion/css';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect, FC, PropsWithChildren, useRef } from 'react';
 
 import { config } from '@grafana/runtime';
 import { SceneComponentProps, VizPanel } from '@grafana/scenes';
@@ -30,12 +30,61 @@ export function DashboardGridItemRenderer({ model }: SceneComponentProps<Dashboa
     <div className={layoutStyle} ref={model.containerRef}>
       {repeatedPanels.map((panel) => (
         <div className={panelWrapper} key={panel.state.key}>
-          <panel.Component model={panel} key={panel.state.key} />
+          <RepeatedPanelWrapper model={panel}>
+            <panel.Component model={panel} key={panel.state.key} />
+          </RepeatedPanelWrapper>
         </div>
       ))}
     </div>
   );
 }
+
+/**
+ * Lazy Load Repeated Panel
+ * @param children
+ * @param model
+ * @constructor
+ */
+const RepeatedPanelWrapper: FC<PropsWithChildren & { model: VizPanel }> = ({ children, model }) => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [isRendered, setIsRendered] = useState(false);
+
+  /**
+   * Render Panel If In Viewport
+   */
+  useEffect(() => {
+    let observer: IntersectionObserver;
+
+    if (!isRendered) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+
+          if (!entry) {
+            return;
+          }
+
+          if (entry.isIntersecting) {
+            setIsRendered(true);
+          }
+        },
+        {
+          root: document.querySelector('.main-view .scrollbar-view'),
+        }
+      );
+
+      if (ref.current) {
+        observer.observe(ref.current);
+      }
+    }
+
+    return () => {
+      observer?.disconnect();
+    };
+  }, [isRendered]);
+
+  return isRendered ? children : <div ref={ref} />;
+};
 
 function useLayoutStyle(direction: RepeatDirection, itemCount: number, maxPerRow: number, itemHeight: number) {
   return useMemo(() => {
