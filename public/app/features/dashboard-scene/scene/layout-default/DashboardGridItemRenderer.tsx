@@ -30,7 +30,7 @@ export function DashboardGridItemRenderer({ model }: SceneComponentProps<Dashboa
     <div className={layoutStyle} ref={model.containerRef}>
       {repeatedPanels.map((panel) => (
         <div className={panelWrapper} key={panel.state.key}>
-          <RepeatedPanelWrapper model={panel}>
+          <RepeatedPanelWrapper>
             <panel.Component model={panel} key={panel.state.key} />
           </RepeatedPanelWrapper>
         </div>
@@ -45,7 +45,7 @@ export function DashboardGridItemRenderer({ model }: SceneComponentProps<Dashboa
  * @param model
  * @constructor
  */
-const RepeatedPanelWrapper: FC<PropsWithChildren & { model: VizPanel }> = ({ children, model }) => {
+const RepeatedPanelWrapper: FC<PropsWithChildren> = ({ children }) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const [isRendered, setIsRendered] = useState(false);
 
