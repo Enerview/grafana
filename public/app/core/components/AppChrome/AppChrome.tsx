@@ -213,6 +213,14 @@ function useResponsiveDockedMegaMenu(chrome: AppChromeService) {
     }
 
     const state = chrome.state.getValue();
+
+    /**
+     * Skip mega menu sync state to prevent override chromeless until route is initialized
+     */
+    if (state.chromeless) {
+      return;
+    }
+
     if (isLargeScreen && !state.megaMenuDocked) {
       chrome.setMegaMenuDocked(true, false);
       chrome.setMegaMenuOpen(true);

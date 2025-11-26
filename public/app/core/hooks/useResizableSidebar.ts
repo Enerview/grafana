@@ -99,13 +99,20 @@ export function useResizableSidebar(): {
 
   useEffect(() => {
     const isWidthKeyExist = store.exists(DOCKED_MENU_SIZE_KEY);
+
     if (isWidthKeyExist) {
       const savedWidth = store.get(DOCKED_MENU_SIZE_KEY);
 
       if (savedWidth) {
         setSidebarWidth(Number(savedWidth));
+        return;
       }
     }
+
+    /**
+     * Collapse menu by default
+     */
+    setSidebarWidth(DOCKED_COLLAPSED_WIDTH);
   }, []);
 
   return { sidebarWidth, resizerRef, handleMouseDown, isMinimized: sidebarWidth < 300, toggleSidebar };
