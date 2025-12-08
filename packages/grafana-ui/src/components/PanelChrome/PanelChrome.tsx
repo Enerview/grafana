@@ -353,15 +353,17 @@ export function PanelChrome({
 
       {hoverHeader && (
         <>
-          <HoverWidget
-            menu={menu}
-            title={typeof title === 'string' ? title : undefined}
-            offset={hoverHeaderOffset}
-            dragClass={dragClass}
-            onOpenMenu={onOpenMenu}
-          >
-            {headerContent}
-          </HoverWidget>
+          {(!!title || !!actions || !!titleItems) && (
+            <HoverWidget
+              menu={menu}
+              title={typeof title === 'string' ? title : undefined}
+              offset={hoverHeaderOffset}
+              dragClass={dragClass}
+              onOpenMenu={onOpenMenu}
+            >
+              {headerContent}
+            </HoverWidget>
+          )}
 
           {statusMessage && (
             <div className={styles.errorContainerFloating}>
@@ -518,10 +520,13 @@ const getStyles = (theme: GrafanaTheme2) => {
     transparentContainer: css({
       label: 'panel-transparent-container',
       backgroundColor: 'transparent',
-      border: '1px solid transparent',
+      /**
+       * Remove border to allow rendering panels like dashboard controls without extra spacing
+       */
+      border: '0px solid transparent',
       boxSizing: 'border-box',
       '&:hover': {
-        border: `1px solid ${borderColor}`,
+        border: `0px solid ${borderColor}`,
       },
     }),
     loadingBarContainer: css({
