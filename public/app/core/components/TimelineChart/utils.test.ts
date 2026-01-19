@@ -428,6 +428,14 @@ describe('getThresholdItems', () => {
 });
 
 describe('prepareTimelineLegendItems', () => {
+  const createTimeAccumulator = (startMs: number) => {
+    let currentTime = startMs;
+
+    return (addMsDiff: number) => {
+      return (currentTime += addMsDiff);
+    };
+  };
+
   const createFieldWithDisplay = (field: Partial<Field>): Field => {
     const finalField: Field = {
       name: 'test',
@@ -541,6 +549,8 @@ describe('prepareTimelineLegendItems', () => {
       },
     ];
 
+    const timeAcc = createTimeAccumulator(1634092733455);
+
     const frames = [
       toDataFrame({
         refId: 'A',
@@ -555,8 +565,22 @@ describe('prepareTimelineLegendItems', () => {
             },
             type: FieldType.time,
             values: [
-              1634092733455, 1634092763455, 1634092793455, 1634092823455, 1634092853455, 1634092883455, 1634092913455,
-              1634092943455, 1634092973455, 1634093003455,
+              /**
+               * Ok
+               */
+              timeAcc(0),
+              timeAcc(1),
+              timeAcc(1),
+              timeAcc(1),
+              timeAcc(1),
+              timeAcc(1),
+              timeAcc(10),
+              /**
+               * Error
+               */
+              timeAcc(1),
+              timeAcc(1),
+              timeAcc(1),
             ],
           }),
           createFieldWithDisplay({
@@ -588,12 +612,12 @@ describe('prepareTimelineLegendItems', () => {
     expect(result).toEqual([
       {
         color: mappings[0].options.result.color,
-        label: 'Ok (80%)',
+        label: 'Ok (94%)',
         yAxis: 1,
       },
       {
         color: mappings[1].options.result.color,
-        label: 'Error (20%)',
+        label: 'Error (5%)',
         yAxis: 1,
       },
     ]);
@@ -714,12 +738,12 @@ describe('prepareTimelineLegendItems', () => {
     expect(result).toEqual([
       {
         color: mappings[0].options.result.color,
-        label: 'Ok (3m 30s)',
+        label: 'Ok (4m)',
         yAxis: 1,
       },
       {
         color: mappings[1].options.result.color,
-        label: 'Error (2m)',
+        label: 'Error (1m 30s)',
         yAxis: 1,
       },
     ]);
@@ -814,11 +838,97 @@ describe('prepareTimelineLegendItems', () => {
     );
 
     expect(result).toEqual([
-      { color: '#73BF69', label: '5 (15m)', yAxis: 1 }, // actual is missing (15m)
+      { color: '#73BF69', label: '5 (15m)', yAxis: 1 },
       { color: '#FADE2A', label: '10 (15m)', yAxis: 1 },
       { color: '#F2495C', label: '20 (15m)', yAxis: 1 },
       { color: '#5794F2', label: '30 (15m)', yAxis: 1 },
-      { color: '#5794F2', label: '40 (15m)', yAxis: 1 }, // wrong :(, expected should have been merged with previous, label: 25-10k and summed to 30m
+    ]);
+  });
+
+  it('should return legend items based on only state changes points', () => {
+    const mappings: ValueMapping[] = [
+      {
+        type: MappingType.ValueToText,
+        options: {
+          ok: {
+            color: 'green',
+          },
+        },
+      },
+      {
+        type: MappingType.ValueToText,
+        options: {
+          warn: {
+            color: 'orange',
+          },
+        },
+      },
+      {
+        type: MappingType.ValueToText,
+        options: {
+          error: {
+            color: 'red',
+          },
+        },
+      },
+    ];
+
+    const intervalMs = {
+      minute: 1000 * 60,
+    };
+    const timeAcc = createTimeAccumulator(1740605550564);
+
+    const frames = [
+      toDataFrame({
+        refId: 'A',
+        fields: [
+          createFieldWithDisplay({
+            name: 'time',
+            config: {
+              color: {
+                mode: FieldColorModeId.Fixed,
+              },
+              mappings,
+            },
+            type: FieldType.time,
+            values: [
+              timeAcc(0), // ok
+              timeAcc(intervalMs.minute * 2), // ok duration
+              timeAcc(intervalMs.minute * 15), // warn duration
+              timeAcc(intervalMs.minute * 30), // ok duration
+              timeAcc(intervalMs.minute * 5), // error duration
+              timeAcc(intervalMs.minute * 5), // ok duration
+            ],
+          }),
+          createFieldWithDisplay({
+            name: 'states',
+            config: {
+              color: {
+                mode: FieldColorModeId.Fixed,
+              },
+              mappings,
+            },
+            type: FieldType.enum,
+            values: ['ok', 'warn', 'ok', 'error', 'ok', 'ok'],
+          }),
+        ],
+      }),
+    ];
+
+    const result = prepareTimelineLegendItems(
+      frames,
+      {
+        displayMode: LegendDisplayMode.List,
+        durationMode: LegendDurationMode.Absolute,
+        showLegend: true,
+      } as VizLegendOptions,
+      theme
+    );
+
+    expect(result).toEqual([
+      expect.objectContaining({ label: 'ok (37m)' }),
+      expect.objectContaining({ label: 'warn (15m)' }),
+      expect.objectContaining({ label: 'error (5m)' }),
     ]);
   });
 });

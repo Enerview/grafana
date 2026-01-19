@@ -613,7 +613,7 @@ export function getFieldLegendItem(
   const stateCounts: Map<string, number> = new Map();
   const stateDurationMs: Map<string, number> = new Map();
 
-  let lastTime: number;
+  let prevTime: number;
 
   frames.forEach((frame) => {
     const timeField = getTimeField(frame);
@@ -621,17 +621,25 @@ export function getFieldLegendItem(
 
     valueFields.forEach((field) => {
       if (!field.config.custom?.hideFrom?.legend) {
-        field.values.forEach((v, index) => {
+        field.values.forEach((v, index, array) => {
+          /**
+           * Skip last item
+           */
+          if (index === array.length - 1) {
+            return;
+          }
+
           let state = field.display!(v);
           if (state.color) {
             stateCounts.set(state.text, (stateCounts.get(state.text) ?? 0) + 1);
             stateColors.set(state.text, state.color!);
 
-            const timeMs = timeField?.timeField?.values[index];
+            const currentTimeMs = timeField?.timeField?.values[index];
+            const nextTimeMs = timeField?.timeField?.values[index + 1];
 
-            if (typeof timeMs === 'number') {
-              const diffMs = Math.max(timeMs - (lastTime ?? timeMs), 0);
-              lastTime = timeMs;
+            if (typeof currentTimeMs === 'number') {
+              const diffMs = Math.max((nextTimeMs ?? currentTimeMs) - (currentTimeMs ?? prevTime), 0);
+              prevTime = currentTimeMs;
 
               stateDurationMs.set(state.text, (stateDurationMs.get(state.text) ?? 0) + diffMs);
             }
@@ -641,7 +649,7 @@ export function getFieldLegendItem(
     });
   });
 
-  const allValuesCount = [...stateCounts.values()].reduce((acc, value) => acc + value, 0);
+  const totalDurationMs = [...stateDurationMs.values()].reduce((acc, value) => acc + value, 0);
 
   stateColors.forEach((color, label) => {
     if (label.length > 0) {
@@ -649,7 +657,7 @@ export function getFieldLegendItem(
 
       switch (options.durationMode) {
         case LegendDurationMode.Percentage: {
-          suffix = ` (${Math.floor(((stateCounts.get(label) ?? 0) * 100) / allValuesCount)}%)`;
+          suffix = ` (${Math.floor(((stateDurationMs.get(label) ?? 0) * 100) / totalDurationMs)}%)`;
           break;
         }
         case LegendDurationMode.Absolute: {
