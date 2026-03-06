@@ -175,7 +175,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   img: css({
     height: theme.spacing(2),
-    width: theme.spacing(2),
+    width: theme.spacing(3),
   }),
   listItem: css({
     flex: 1,
