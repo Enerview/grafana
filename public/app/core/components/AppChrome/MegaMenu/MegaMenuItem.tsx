@@ -181,16 +181,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   listItemHover: css({
     '&:hover': {
       background: `${theme.colors.background.secondary}`,
-
-      '&::before': {
-        background: `${theme.colors.background.primary}`,
-        content: '" "',
-        display: 'block',
-        height: theme.spacing(4),
-        position: 'absolute',
-        transform: 'translateX(-60%)',
-        width: '4px',
-      },
     },
   }),
   menuItem: css({
