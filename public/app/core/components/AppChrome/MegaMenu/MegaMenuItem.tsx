@@ -21,11 +21,12 @@ interface Props {
   level?: number;
   onPin: (item: NavModelItem) => void;
   isPinned: (id?: string) => boolean;
+  isMinimizeDockedView: boolean;
 }
 
 const MAX_DEPTH = 2;
 
-export function MegaMenuItem({ link, activeItem, level = 0, onClick, onPin, isPinned }: Props) {
+export function MegaMenuItem({ link, activeItem, isMinimizeDockedView, level = 0, onClick, onPin, isPinned }: Props) {
   const { chrome } = useGrafana();
   const state = chrome.useState();
   const menuIsDocked = state.megaMenuDocked;
@@ -36,7 +37,8 @@ export function MegaMenuItem({ link, activeItem, level = 0, onClick, onPin, isPi
     `grafana.navigation.expanded[${link.text}]`,
     Boolean(hasActiveChild)
   );
-  const showExpandButton = level < MAX_DEPTH && Boolean(linkHasChildren(link) || link.emptyMessage);
+  const showExpandButton =
+    level < MAX_DEPTH && Boolean(linkHasChildren(link) || link.emptyMessage) && !isMinimizeDockedView;
   const item = useRef<HTMLLIElement>(null);
 
   const styles = useStyles2(getStyles);
@@ -78,7 +80,12 @@ export function MegaMenuItem({ link, activeItem, level = 0, onClick, onPin, isPi
   }
 
   return (
-    <li ref={item} className={styles.listItem}>
+    <li
+      ref={item}
+      className={cx(styles.listItem, {
+        [styles.listItemHover]: isMinimizeDockedView,
+      })}
+    >
       <div className={styles.menuItem}>
         {level !== 0 && <Indent level={level === MAX_DEPTH ? level - 1 : level} spacing={3} />}
         {level === MAX_DEPTH && <div className={styles.itemConnector} />}
@@ -93,6 +100,7 @@ export function MegaMenuItem({ link, activeItem, level = 0, onClick, onPin, isPi
             url={link.url}
             onPin={() => onPin(link)}
             isPinned={isPinned(link.url)}
+            title={isMinimizeDockedView ? link.text : undefined}
           >
             <div
               className={cx(styles.labelWrapper, {
@@ -144,6 +152,7 @@ export function MegaMenuItem({ link, activeItem, level = 0, onClick, onPin, isPi
                   level={level + 1}
                   onPin={onPin}
                   isPinned={isPinned}
+                  isMinimizeDockedView={isMinimizeDockedView}
                 />
               ))
           ) : (
@@ -163,11 +172,26 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   img: css({
     height: theme.spacing(2),
-    width: theme.spacing(2),
+    width: theme.spacing(3),
   }),
   listItem: css({
     flex: 1,
     maxWidth: '100%',
+  }),
+  listItemHover: css({
+    '&:hover': {
+      background: `${theme.colors.background.secondary}`,
+
+      '&::before': {
+        background: `${theme.colors.background.primary}`,
+        content: '" "',
+        display: 'block',
+        height: theme.spacing(4),
+        position: 'absolute',
+        transform: 'translateX(-60%)',
+        width: '4px',
+      },
+    },
   }),
   menuItem: css({
     display: 'flex',
@@ -204,11 +228,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flex: 1,
     height: '100%',
     minWidth: 0,
+    '&:hover': {
+      background: `${theme.colors.background.secondary}`,
+    },
   }),
   labelWrapper: css({
     display: 'flex',
     alignItems: 'center',
-    gap: theme.spacing(1),
+    gap: theme.spacing(2),
     paddingLeft: theme.spacing(1),
     minWidth: 0,
   }),

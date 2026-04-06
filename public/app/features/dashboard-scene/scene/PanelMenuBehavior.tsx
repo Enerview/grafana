@@ -389,7 +389,7 @@ export function panelMenuBehavior(menu: VizPanelMenu) {
       });
     }
 
-    if (moreSubMenu.length) {
+    if (moreSubMenu.length && contextSrv.isEditor) {
       items.push({
         type: 'submenu',
         text: t('panel.header-menu.more', `More...`),

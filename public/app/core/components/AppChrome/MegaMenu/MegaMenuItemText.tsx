@@ -15,9 +15,10 @@ export interface Props {
   url: string;
   onPin: (id?: string) => void;
   isPinned?: boolean;
+  title?: string;
 }
 
-export function MegaMenuItemText({ children, isActive, onClick, target, url, onPin, isPinned }: Props) {
+export function MegaMenuItemText({ children, isActive, onClick, target, url, onPin, isPinned, title }: Props) {
   const theme = useTheme2();
 
   const styles = getStyles(theme, isActive);
@@ -42,6 +43,7 @@ export function MegaMenuItemText({ children, isActive, onClick, target, url, onP
         href={url}
         target={target}
         onClick={onClick}
+        title={title}
         {...(isActive && { 'aria-current': 'page' })}
       >
         {linkContent}

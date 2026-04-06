@@ -36,6 +36,15 @@ export class CopyPanelEvent extends BusEventWithPayload<PanelModel> {
   static type = 'copy-panel';
 }
 
+/**
+ * Called to trigger mega menu visibility
+ *
+ * @public
+ */
+export class MegaMenuToggleEvent extends BusEventWithPayload<{ isMinimized: boolean }> {
+  static type = 'mega-menu-toggle';
+}
+
 // Internal singleton instance
 let singletonInstance: EventBus;
 
