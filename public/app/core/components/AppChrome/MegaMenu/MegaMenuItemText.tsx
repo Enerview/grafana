@@ -35,6 +35,8 @@ export function MegaMenuItemText({ children, isActive, onClick, target, url, onP
     </div>
   );
 
+  const isBookmarksAllowed = false;
+
   return (
     <div className={cx(styles.wrapper, isActive && styles.wrapperActive)}>
       <LinkComponent
@@ -48,7 +50,7 @@ export function MegaMenuItemText({ children, isActive, onClick, target, url, onP
       >
         {linkContent}
       </LinkComponent>
-      {contextSrv.isSignedIn && url && url !== '/bookmarks' && (
+      {contextSrv.isSignedIn && url && url !== '/bookmarks' && isBookmarksAllowed && (
         <IconButton
           name="bookmark"
           className={'pin-icon'}
