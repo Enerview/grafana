@@ -238,7 +238,7 @@ const getStyles = (theme: GrafanaTheme2, headerLevels: number, headerHeight: num
       label: 'page-content',
       display: 'flex',
       flexDirection: 'column',
-      paddingTop: headerLevels * headerHeight,
+      paddingTop: headerHeight,
       flexGrow: 1,
       height: 'auto',
     }),
