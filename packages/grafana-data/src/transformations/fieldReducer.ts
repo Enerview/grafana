@@ -372,7 +372,7 @@ export const fieldReducers = new Registry<FieldReducerInfo>(() => [
   },
   {
     id: ReducerID.logmin,
-    name: 'Min (above zero)',
+    name: 'Min',
     description: 'Used for log min scale',
     standard: true,
     preservesUnits: true,
