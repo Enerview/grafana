@@ -49,7 +49,6 @@ export const TimeSeriesPanel = ({
   const {
     sync,
     eventsScope,
-    canAddAnnotations,
     onThresholdsChange,
     canEditThresholds,
     showThresholds,
@@ -108,7 +107,7 @@ export const TimeSeriesPanel = ({
     return undefined;
   }, [frames, id]);
 
-  const enableAnnotationCreation = Boolean(canAddAnnotations && canAddAnnotations());
+  const enableAnnotationCreation = true;
   const [newAnnotationRange, setNewAnnotationRange] = useState<TimeRange2 | null>(null);
   const cursorSync = sync?.() ?? DashboardCursorSync.Off;
 

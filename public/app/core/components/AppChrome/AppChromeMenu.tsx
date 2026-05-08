@@ -2,7 +2,7 @@ import { css } from '@emotion/css';
 import { useDialog } from '@react-aria/dialog';
 import { FocusScope } from '@react-aria/focus';
 import { OverlayContainer, useOverlay } from '@react-aria/overlays';
-import { useRef } from 'react';
+import { RefObject, useRef } from 'react';
 import CSSTransition from 'react-transition-group/CSSTransition';
 
 import { GrafanaTheme2 } from '@grafana/data';
@@ -13,9 +13,13 @@ import { useGrafana } from 'app/core/context/GrafanaContext';
 
 import { MegaMenu, MENU_WIDTH } from './MegaMenu/MegaMenu';
 
-interface Props {}
+interface Props {
+  resizerRef: RefObject<HTMLDivElement>;
+  handleMouseDown: () => void;
+  toggleSidebar: () => void;
+}
 
-export function AppChromeMenu({}: Props) {
+export function AppChromeMenu({ handleMouseDown, resizerRef }: Props) {
   const theme = useTheme2();
   const { chrome } = useGrafana();
   const state = chrome.useState();
@@ -60,7 +64,17 @@ export function AppChromeMenu({}: Props) {
           <>
             {isOpen && (
               <FocusScope contain autoFocus restoreFocus>
-                <MegaMenu className={styles.menu} onClose={onClose} ref={ref} {...overlayProps} {...dialogProps} />
+                <MegaMenu
+                  className={styles.menu}
+                  ref={ref}
+                  resizerRef={resizerRef}
+                  handleMouseDown={handleMouseDown}
+                  sidebarWidth={300}
+                  toggleSidebar={() => onClose()}
+                  isMinimized={false}
+                  {...overlayProps}
+                  {...dialogProps}
+                />
               </FocusScope>
             )}
           </>

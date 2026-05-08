@@ -47,7 +47,7 @@ export const StateTimelinePanel = ({
 
   // temp range set for adding new annotation set by TooltipPlugin2, consumed by AnnotationPlugin2
   const [newAnnotationRange, setNewAnnotationRange] = useState<TimeRange2 | null>(null);
-  const { sync, eventsScope, canAddAnnotations, eventBus, canExecuteActions } = usePanelContext();
+  const { sync, eventsScope, eventBus, canExecuteActions } = usePanelContext();
 
   const { dataLinkPostProcessor } = useDataLinksContext();
 
@@ -75,7 +75,7 @@ export const StateTimelinePanel = ({
     return <PanelDataErrorView panelId={panelId} fieldConfig={fieldConfig} data={data} message={warn} needsTimeField />;
   }
 
-  const enableAnnotationCreation = Boolean(canAddAnnotations && canAddAnnotations());
+  const enableAnnotationCreation = true;
 
   return (
     <div className={containerStyles}>

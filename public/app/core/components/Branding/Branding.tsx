@@ -90,6 +90,7 @@ export function HomeLink({ homeNav, inMegaMenuOverlay }: { homeNav?: NavModelIte
 function homeLinkStyles(theme: GrafanaTheme2) {
   return {
     homeLink: css({
+      flex: 'none',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',

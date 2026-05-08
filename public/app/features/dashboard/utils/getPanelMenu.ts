@@ -275,7 +275,7 @@ export function getPanelMenu(
     });
   }
 
-  if (subMenu.length) {
+  if (subMenu.length && contextSrv.isEditor) {
     menu.push({
       type: 'submenu',
       text: t('panel.header-menu.more', `More...`),
