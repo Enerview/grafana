@@ -87,7 +87,7 @@ func (s *ServiceImpl) getAdminNode(c *contextmodel.ReqContext) (*navtree.NavLink
 			Url:      s.cfg.AppSubURL + "/plugins",
 		})
 	}
-	if hasAccess(correlations.ConfigurationPageAccess) {
+	if hasAccess(correlations.ConfigurationPageAccess) && false {
 		pluginsNodeLinks = append(pluginsNodeLinks, &navtree.NavLink{
 			Text:     "Correlations",
 			Icon:     "gf-glue",
