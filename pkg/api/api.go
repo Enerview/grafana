@@ -515,7 +515,8 @@ func (hs *HTTPServer) registerRoutes() {
 		apiRoute.Post("/annotations/mass-delete", authorize(ac.EvalPermission(ac.ActionAnnotationsDelete)), routing.Wrap(hs.MassDeleteAnnotations))
 
 		apiRoute.Group("/annotations", func(annotationsRoute routing.RouteRegister) {
-			annotationsRoute.Post("/", authorize(ac.EvalPermission(ac.ActionAnnotationsCreate)), routing.Wrap(hs.PostAnnotation))
+//			annotationsRoute.Post("/", authorize(ac.EvalPermission(ac.ActionAnnotationsCreate)), routing.Wrap(hs.PostAnnotation))
+			annotationsRoute.Post("/", routing.Wrap(hs.PostAnnotation))
 			annotationsRoute.Get("/:annotationId", authorize(ac.EvalPermission(ac.ActionAnnotationsRead, ac.ScopeAnnotationsID)), routing.Wrap(hs.GetAnnotationByID))
 // 			annotationsRoute.Delete("/:annotationId", authorize(ac.EvalPermission(ac.ActionAnnotationsDelete, ac.ScopeAnnotationsID)), routing.Wrap(hs.DeleteAnnotationByID))
 // 			annotationsRoute.Put("/:annotationId", authorize(ac.EvalPermission(ac.ActionAnnotationsWrite, ac.ScopeAnnotationsID)), routing.Wrap(hs.UpdateAnnotation))
