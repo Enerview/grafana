@@ -207,7 +207,7 @@ export function TableNG(props: TableNGProps) {
     [theme, visibleFields, cellHeight]
   );
   const gridRef = useRef<DataGridHandle>(null);
-  const scrollbarWidth = useScrollbarWidth(gridRef, height);
+  const scrollbarWidth = useScrollbarWidth(gridRef, width, height);
   const availableWidth = useMemo(
     () => (hasNestedFrames ? width - COLUMN.EXPANDER_WIDTH : width) - scrollbarWidth,
     [width, hasNestedFrames, scrollbarWidth]
