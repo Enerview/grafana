@@ -1,13 +1,22 @@
-import { throttle } from 'lodash';
+import { throttle, set } from 'lodash';
 import { useState, useRef, useEffect, RefObject, useMemo, useCallback } from 'react';
 
 import { store } from '@grafana/data';
 
-const MENU_WIDTH = 300;
+const MENU_MIN_WIDTH = 300;
 const MAX_PERCENT = 0.35;
 const COLLAPSE_THRESHOLD = 200;
 export const DOCKED_MENU_SIZE_KEY = 'Enerview.user.docked.menu.size';
 export const DOCKED_COLLAPSED_WIDTH = 45;
+const IS_STATE_PERSISTENT = false;
+
+const persistentStore = IS_STATE_PERSISTENT
+  ? store
+  : {
+      exists: () => false,
+      get: () => undefined,
+      set: () => {},
+    };
 
 export function useResizableSidebar(): {
   sidebarWidth: number;
@@ -16,7 +25,7 @@ export function useResizableSidebar(): {
   toggleSidebar: (isMinimized?: boolean) => void;
   isMinimized: boolean;
 } {
-  const [sidebarWidth, setSidebarWidth] = useState(MENU_WIDTH);
+  const [sidebarWidth, setSidebarWidth] = useState(DOCKED_COLLAPSED_WIDTH);
   const resizerRef = useRef<HTMLDivElement>(null);
   const isResizingSidebarRef = useRef(false);
 
@@ -29,7 +38,7 @@ export function useResizableSidebar(): {
   const saveSidebarWidthInStore = useMemo(
     () =>
       throttle((width: number) => {
-        store.set(DOCKED_MENU_SIZE_KEY, width);
+        persistentStore.set(DOCKED_MENU_SIZE_KEY, width);
       }, 500),
     []
   );
@@ -51,7 +60,7 @@ export function useResizableSidebar(): {
         return;
       }
 
-      saveSidebarWidth(MENU_WIDTH);
+      saveSidebarWidth(MENU_MIN_WIDTH);
     },
     [saveSidebarWidth, sidebarWidth]
   );
@@ -66,8 +75,8 @@ export function useResizableSidebar(): {
       const mouseWidth = e.clientX;
       let newWidth = mouseWidth;
 
-      if (mouseWidth < MENU_WIDTH) {
-        newWidth = MENU_WIDTH;
+      if (mouseWidth < MENU_MIN_WIDTH) {
+        newWidth = MENU_MIN_WIDTH;
       }
 
       if (mouseWidth < COLLAPSE_THRESHOLD) {
@@ -98,10 +107,10 @@ export function useResizableSidebar(): {
   }, [saveSidebarWidth]);
 
   useEffect(() => {
-    const isWidthKeyExist = store.exists(DOCKED_MENU_SIZE_KEY);
+    const isWidthKeyExist = persistentStore.exists(DOCKED_MENU_SIZE_KEY);
 
     if (isWidthKeyExist) {
-      const savedWidth = store.get(DOCKED_MENU_SIZE_KEY);
+      const savedWidth = persistentStore.get(DOCKED_MENU_SIZE_KEY);
 
       if (savedWidth) {
         setSidebarWidth(Number(savedWidth));
@@ -115,5 +124,23 @@ export function useResizableSidebar(): {
     setSidebarWidth(DOCKED_COLLAPSED_WIDTH);
   }, []);
 
-  return { sidebarWidth, resizerRef, handleMouseDown, isMinimized: sidebarWidth < 300, toggleSidebar };
+  const getIsMinimized = useCallback(() => {
+    return sidebarWidth < MENU_MIN_WIDTH;
+  }, [sidebarWidth]);
+
+  /**
+   * Set global sidebar helpers for plugins
+   */
+  useEffect(() => {
+    if (!window.__enerview) {
+      window.__enerview = {};
+    }
+
+    set(window.__enerview, 'sidebar', {
+      setMinimizedState: toggleSidebar,
+      getIsMinimized,
+    });
+  }, [getIsMinimized, toggleSidebar]);
+
+  return { sidebarWidth, resizerRef, handleMouseDown, isMinimized: getIsMinimized(), toggleSidebar };
 }
