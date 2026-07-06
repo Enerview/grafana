@@ -248,6 +248,11 @@ export class DashboardScene extends SceneObjectBase<DashboardSceneState> impleme
       dashboardWatcher.watch(this.state.uid);
     }
 
+    /**
+     * Hide Docker Menu
+     */
+    window.__enerview?.sidebar?.setMinimizedState(true);
+
     let clearKeyBindings = () => {};
     if (!config.publicDashboardAccessToken) {
       clearKeyBindings = setupKeyboardShortcuts(this);
