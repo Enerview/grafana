@@ -266,7 +266,7 @@ const PROTECTED_NAV_IDS = new Set(['home', 'bookmarks', 'starred']);
  * Items the mega menu never lists directly (surfaced elsewhere in the chrome). Home is reached via
  * the logo, so it isn't repeated as a menu item.
  */
-export const NON_MENU_NAV_IDS = new Set(['profile', 'help', HOME_NAV_ID]);
+export const NON_MENU_NAV_IDS = new Set(['profile', 'help']);
 
 /**
  * The stable key identifying an item for hiding — its id, or its url when it has no id (plugin nav

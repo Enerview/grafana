@@ -140,7 +140,7 @@ export function TableFlat(props: TableNGProps) {
   );
 
   const gridRef = useRef<DataGridHandle>(null);
-  const scrollbarWidth = useScrollbarWidth(gridRef, height);
+  const scrollbarWidth = useScrollbarWidth(gridRef, width, height);
   // A scrollbar appearing/disappearing changes how much room the columns have, so factor it out.
   const availableWidth = useMemo(() => width - scrollbarWidth, [width, scrollbarWidth]);
 

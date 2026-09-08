@@ -34,6 +34,8 @@ import { ReturnToPrevious } from './ReturnToPrevious/ReturnToPrevious';
 import { SingleTopBar } from './TopBar/SingleTopBar';
 import { getChromeHeaderLevelHeight, useChromeHeaderLevels } from './TopBar/useChromeHeaderHeight';
 
+export const EXTENSION_SIDEBAR_FLOATING_TESTID = 'extension-sidebar-floating';
+
 export interface Props extends PropsWithChildren<{}> {}
 
 export function AppChrome({ children }: Props) {

@@ -26,7 +26,7 @@ export function useResizableSidebar(): {
   isMinimized: boolean;
 } {
   const [sidebarWidth, setSidebarWidth] = useState(DOCKED_COLLAPSED_WIDTH);
-  const resizerRef = useRef<HTMLDivElement>(null);
+  const resizerRef = useRef<HTMLDivElement>();
   const isResizingSidebarRef = useRef(false);
 
   const handleMouseDown = () => {
