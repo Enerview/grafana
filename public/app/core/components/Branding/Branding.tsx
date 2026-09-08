@@ -80,6 +80,7 @@ export function HomeLogo({ homeNav, onClick }: { homeNav?: NavModelItem; onClick
 function homeLogoStyles(theme: GrafanaTheme2) {
   return {
     homeLogo: css({
+      flex: 'none',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',

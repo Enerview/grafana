@@ -162,7 +162,7 @@ export function getAppRoutes(): RouteDescriptor[] {
       path: DATASOURCES_ROUTES.New,
       component: () => <Navigate replace to={CONNECTIONS_ROUTES.DataSourcesNew} />,
     },
-    {
+    false && {
       path: '/datasources/correlations',
       component: SafeDynamicImport(
         () =>

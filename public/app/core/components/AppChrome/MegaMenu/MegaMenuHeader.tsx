@@ -1,59 +1,43 @@
 import { css } from '@emotion/css';
 
 import { type GrafanaTheme2 } from '@grafana/data';
-import { t, Trans } from '@grafana/i18n';
-import { useFlagGrafanaVisualDesignRefresh } from '@grafana/runtime/internal';
-import { Box, IconButton, Stack, useStyles2, Text } from '@grafana/ui';
-import { useGrafana } from 'app/core/context/GrafanaContext';
-import { useHomeNav } from 'app/core/hooks/useHomeNav';
+import { Stack, useTheme2 } from '@grafana/ui';
+import { HOME_NAV_ID } from 'app/core/reducers/navModel';
+import { useSelector } from 'app/types/store';
 
 import { HomeLogo, HomeTitle } from '../../Branding/Branding';
 import { OrganizationSwitcher } from '../OrganizationSwitcher/OrganizationSwitcher';
 import { getChromeHeaderLevelHeight } from '../TopBar/useChromeHeaderHeight';
 
 export interface Props {
-  handleDockedMenu: () => void;
-  onClose: () => void;
+  toggleSidebar: (isMinimized?: boolean) => void;
+  isMinimizeDockedView: boolean;
 }
 
 export const DOCK_MENU_BUTTON_ID = 'dock-menu-button';
 export const MEGA_MENU_HEADER_TOGGLE_ID = 'mega-menu-header-toggle';
 
-export function MegaMenuHeader({ handleDockedMenu, onClose }: Props) {
-  const visualRefreshEnabled = useFlagGrafanaVisualDesignRefresh();
-  const { chrome } = useGrafana();
-  const state = chrome.useState();
-  const homeNav = useHomeNav();
-  const styles = useStyles2(getStyles, visualRefreshEnabled);
-
-  // When undocked we do not show a header, but just the org switcher (which only renders when there are multiple orgs)
-  if (!state.megaMenuDocked) {
-    return <OrganizationSwitcher undocked={true} />;
-  }
+export function MegaMenuHeader({ toggleSidebar, isMinimizeDockedView }: Props) {
+  const theme = useTheme2();
+  const homeNav = useSelector((state) => state.navIndex)[HOME_NAV_ID];
+  const styles = getStyles(theme);
 
   return (
     <div className={styles.header}>
       <Stack alignItems="center" minWidth={0} gap={1}>
-        {state.megaMenuDocked && <HomeLogo homeNav={homeNav} onClick={state.megaMenuDocked ? undefined : onClose} />}
+        <HomeLogo homeNav={homeNav} />
         <OrganizationSwitcher>
-          {state.megaMenuDocked && <HomeTitle homeNav={homeNav} onClick={state.megaMenuDocked ? undefined : onClose} />}
-          {!state.megaMenuDocked && (
-            <Box paddingLeft={2}>
-              <Text color="secondary">
-                <Trans i18nKey="navigation.megamenu.header-title">Navigation</Trans>
-              </Text>
-            </Box>
+          {!isMinimizeDockedView && (
+            <HomeTitle homeNav={homeNav} onClick={() => toggleSidebar(!isMinimizeDockedView)} />
           )}
         </OrganizationSwitcher>
       </Stack>
       <div className={styles.flexGrow} />
-      <IconButton
-        aria-label={t('navigation.megamenu.close', 'Close menu')}
-        tooltip={t('navigation.megamenu.close', 'Close menu')}
-        name="times"
-        onClick={onClose}
-        size="lg"
-        variant="secondary"
+      <div
+        id="mega-menu-insertable-buttons"
+        style={{
+          display: isMinimizeDockedView ? 'none' : undefined,
+        }}
       />
     </div>
   );
@@ -61,7 +45,7 @@ export function MegaMenuHeader({ handleDockedMenu, onClose }: Props) {
 
 MegaMenuHeader.displayName = 'MegaMenuHeader';
 
-const getStyles = (theme: GrafanaTheme2, visualRefreshEnabled: boolean) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   dockMenuButton: css({
     display: 'none',
 
@@ -71,13 +55,18 @@ const getStyles = (theme: GrafanaTheme2, visualRefreshEnabled: boolean) => ({
   }),
   header: css({
     alignItems: 'center',
-    borderBottom: visualRefreshEnabled ? undefined : `1px solid ${theme.colors.border.weak}`,
+    borderBottom: `1px solid ${theme.colors.border.weak}`,
     display: 'flex',
     gap: theme.spacing(1),
     justifyContent: 'space-between',
-    padding: theme.spacing(0, 1, 0, 1),
+    padding: theme.spacing(0, 1, 0, 0.75),
     height: getChromeHeaderLevelHeight(),
     flexShrink: 0,
   }),
   flexGrow: css({ flexGrow: 1 }),
+  logoButton: css({
+    '&:hover': {
+      cursor: 'pointer',
+    },
+  }),
 });

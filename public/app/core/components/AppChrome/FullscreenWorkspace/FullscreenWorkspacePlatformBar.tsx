@@ -37,7 +37,13 @@ export function FullscreenWorkspacePlatformBar() {
         <>
           <div className={styles.backdrop} onClick={closeMenu} role="presentation" />
           <nav className={styles.drawer}>
-            <MegaMenu onClose={closeMenu} />
+            <MegaMenu
+              resizerRef={{} as never}
+              handleMouseDown={() => {}}
+              sidebarWidth={300}
+              toggleSidebar={() => closeMenu()}
+              isMinimized={false}
+            />
           </nav>
         </>
       )}

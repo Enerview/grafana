@@ -1,4 +1,4 @@
-import { type ComponentProps, useCallback, useEffect, useRef, useState, useImperativeHandle } from 'react';
+import { type ComponentProps, useCallback, useEffect, useRef, useState, useImperativeHandle, useMemo } from 'react';
 import * as React from 'react';
 import {
   default as ReactSelect,
@@ -171,6 +171,19 @@ export function SelectBase<T, Rest = {}>({
   // local state to track when menu is open - used to stop Escape key from propagating to parent overlays when menu is open
   const [open, setOpen] = useState(!!isOpen);
   const [showFocusRing, setShowFocusRing] = useState(false);
+
+  /**
+   * Is Auto Width
+   * For some reason, when component has 'auto' width and maxVisibleValues
+   * it cant calculate styles and with, height correct
+   * If component has  maxVisibleValues and auto width is false the styles  are calculated as expected.
+   */
+  const isAutoWidth = useMemo(() => {
+    if (maxVisibleValues && maxVisibleValues > 0 && width === 'auto') {
+      return false;
+    }
+    return width === 'auto';
+  }, [maxVisibleValues, width]);
 
   useImperativeHandle(selectRef, () => reactSelectRef.current!, []);
 
@@ -418,7 +431,7 @@ export function SelectBase<T, Rest = {}>({
         showFocusRing={showFocusRing}
         styles={selectStyles}
         className={className}
-        autoWidth={width === 'auto'}
+        autoWidth={isAutoWidth}
         {...commonSelectProps}
         {...creatableProps}
         {...asyncSelectProps}

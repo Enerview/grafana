@@ -192,7 +192,7 @@ export function TableNested(props: TableNGProps & { nestedFramesField: Field<Dat
   });
 
   const gridRef = useRef<DataGridHandle>(null);
-  const scrollbarWidth = useScrollbarWidth(gridRef, height);
+  const scrollbarWidth = useScrollbarWidth(gridRef, width, height);
   // nested tables don't support frozen columns; subtract expander column width
   const frozenColumns = 0;
   const numFrozenColsFullyInView = 0;

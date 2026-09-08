@@ -77,9 +77,9 @@ export const getGridStyles = memoize((theme: GrafanaTheme2, enablePagination?: b
       '--rdg-row-selected-background-color': selectedRowColor,
       '--rdg-row-selected-hover-background-color': selectedRowHoverColor,
 
-      // TODO: magic 32px number is unfortunate. it would be better to have the content
+      // TODO: magic 31px number is unfortunate. it would be better to have the content
       // flow using flexbox rather than hard-coding this size via a calc
-      blockSize: enablePagination ? 'calc(100% - 32px)' : '100%',
+      blockSize: enablePagination ? 'calc(100% - 31px)' : '100%',
       scrollbarWidth: 'thin',
       scrollbarColor: theme.isDark ? '#fff5 #fff1' : '#0005 #0001',
 

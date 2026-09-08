@@ -88,7 +88,7 @@ const HeatmapPanelViz = ({
 }: HeatmapPanelProps & { info: HeatmapDataForViz }) => {
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
-  const { sync, eventsScope, canAddAnnotations, onSelectRange, canExecuteActions } = usePanelContext();
+  const { sync, eventsScope, onSelectRange, canExecuteActions } = usePanelContext();
   const cursorSync = sync?.() ?? DashboardCursorSync.Off;
 
   const userCanExecuteActions = useMemo(() => canExecuteActions?.() ?? false, [canExecuteActions]);
@@ -198,7 +198,7 @@ const HeatmapPanelViz = ({
     );
   };
 
-  const enableAnnotationCreation = Boolean(canAddAnnotations && canAddAnnotations());
+  const enableAnnotationCreation = true;
 
   return (
     <>
