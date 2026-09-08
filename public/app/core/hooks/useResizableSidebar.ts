@@ -26,7 +26,7 @@ export function useResizableSidebar(): {
   isMinimized: boolean;
 } {
   const [sidebarWidth, setSidebarWidth] = useState(DOCKED_COLLAPSED_WIDTH);
-  const resizerRef = useRef<HTMLDivElement>();
+  const resizerRef = useRef<HTMLDivElement>(null);
   const isResizingSidebarRef = useRef(false);
 
   const handleMouseDown = () => {
@@ -142,5 +142,12 @@ export function useResizableSidebar(): {
     });
   }, [getIsMinimized, toggleSidebar]);
 
-  return { sidebarWidth, resizerRef, handleMouseDown, isMinimized: getIsMinimized(), toggleSidebar };
+  return {
+    sidebarWidth,
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    resizerRef: resizerRef as never,
+    handleMouseDown,
+    isMinimized: getIsMinimized(),
+    toggleSidebar,
+  };
 }
