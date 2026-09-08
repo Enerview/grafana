@@ -49,19 +49,12 @@ export const StatusHistoryPanel = ({
 
   // temp range set for adding new annotation set by TooltipPlugin2, consumed by AnnotationPlugin2
   const [newAnnotationRange, setNewAnnotationRange] = useState<TimeRange2 | null>(null);
-  const {
-    sync,
-    eventsScope,
-    canAddAnnotations,
-    eventBus,
-    canExecuteActions,
-    getFiltersBasedOnGrouping,
-    onAddAdHocFilters,
-  } = usePanelContext();
+  const { sync, eventsScope, eventBus, canExecuteActions, getFiltersBasedOnGrouping, onAddAdHocFilters } =
+    usePanelContext();
   const { dataLinkPostProcessor } = useDataLinksContext();
   const cursorSync = sync?.() ?? DashboardCursorSync.Off;
 
-  const enableAnnotationCreation = Boolean(canAddAnnotations && canAddAnnotations());
+  const enableAnnotationCreation = true;
   const userCanExecuteActions = useMemo(() => canExecuteActions?.() ?? false, [canExecuteActions]);
 
   const getFilterByGroupedLabelsModel = useCallback(

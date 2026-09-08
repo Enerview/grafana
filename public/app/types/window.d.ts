@@ -26,6 +26,13 @@ export declare global {
     nonce: string | undefined;
     System: typeof System;
 
+    __enerview?: {
+      sidebar?: {
+        setMinimizedState: (isMinimized: boolean) => void;
+        getIsMinimized: () => boolean;
+      };
+    };
+
     /**
      * Chromedp binding injected by grafana-image-renderer for report rendering communication.
      * Takes a JSON-stringified message and signals render completion.

@@ -1,297 +1,158 @@
-import { css, cx } from '@emotion/css';
-import { DragDropContext, Draggable, type DraggableProvided, Droppable, type DropResult } from '@hello-pangea/dnd';
+import { css } from '@emotion/css';
 import { type DOMAttributes } from '@react-types/shared';
-import { memo, forwardRef, useId } from 'react';
+import { memo, forwardRef, useCallback, type RefObject } from 'react';
+import { useLocation } from 'react-router-dom-v5-compat';
 
+import { usePatchUserPreferencesMutation } from '@grafana/api-clients/rtkq/legacy/preferences';
 import { type GrafanaTheme2, type NavModelItem } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
-import { t, Trans } from '@grafana/i18n';
-import { useFlagGrafanaVisualDesignRefresh } from '@grafana/runtime/internal';
-import { ScrollContainer, Text, useStyles2, Button, IconButton } from '@grafana/ui';
+import { t } from '@grafana/i18n';
+import { reportInteraction } from '@grafana/runtime';
+import { ScrollContainer, useStyles2 } from '@grafana/ui';
 import { useGrafana } from 'app/core/context/GrafanaContext';
-import { useSyncStarredItemsInNav } from 'app/features/stars/hooks';
+import { setBookmark } from 'app/core/reducers/navBarTree';
+import { useDispatch, useSelector } from 'app/types/store';
 
-import { MegaMenuCustomiseControls } from './MegaMenuCustomiseControls';
 import { MegaMenuExtensionPoint } from './MegaMenuExtensionPoint';
-import { DOCK_MENU_BUTTON_ID, MegaMenuHeader } from './MegaMenuHeader';
+import { MegaMenuHeader } from './MegaMenuHeader';
 import { MegaMenuItem } from './MegaMenuItem';
-import { MegaMenuPinnedItem } from './MegaMenuPinnedItem';
-import { MegaMenuSkeleton } from './MegaMenuSkeleton';
-import { useNavCustomization } from './hooks';
+import { usePinnedItems } from './hooks';
+import { enrichWithInteractionTracking, findByUrl, getActiveItem } from './utils';
 
-export const MENU_WIDTH = '320px';
+export const MENU_WIDTH = 300;
 
 export interface Props extends DOMAttributes {
-  onClose: () => void;
+  resizerRef: RefObject<HTMLDivElement>;
+  handleMouseDown: () => void;
+  toggleSidebar: (isMinimized?: boolean) => void;
+  sidebarWidth: number;
+  isMinimized: boolean;
 }
 
 export const MegaMenu = memo(
-  forwardRef<HTMLDivElement, Props>(({ onClose, ...restProps }, ref) => {
-    const visualRefreshEnabled = useFlagGrafanaVisualDesignRefresh();
-    const styles = useStyles2(getStyles, visualRefreshEnabled);
-    const { chrome } = useGrafana();
-    const state = chrome.useState();
-    const { isLoading: starredItemsLoading, isError: starredItemsError } = useSyncStarredItemsInNav();
+  forwardRef<HTMLDivElement, Props>(
+    ({ handleMouseDown, sidebarWidth, toggleSidebar, resizerRef, isMinimized, ...restProps }, ref) => {
+      const navTree = useSelector((state) => state.navBarTree);
+      const styles = useStyles2(getStyles, sidebarWidth);
+      const location = useLocation();
+      const { chrome } = useGrafana();
+      const dispatch = useDispatch();
+      const state = chrome.useState();
+      const [patchPreferences] = usePatchUserPreferencesMutation();
+      const pinnedItems = usePinnedItems();
 
-    const {
-      canCustomise,
-      isLoading,
-      navItems,
-      pinnedEntries,
-      activeItem,
-      isPinned,
-      onPinItem,
-      isHideable,
-      isHidden,
-      onToggleHidden,
-      editMode,
-      canReset,
-      onEnterEditMode,
-      onCancelEdit,
-      onSaveEdit,
-      onResetToDefault,
-      onReorderPinned,
-      onReorderSection,
-      isSaving,
-    } = useNavCustomization();
+      // Remove profile + help from tree
+      const navItems = navTree
+        .filter((item) => item.id !== 'profile' && item.id !== 'help')
+        .map((item) => enrichWithInteractionTracking(item, state.megaMenuDocked));
 
-    const handleDockedMenu = () => {
-      chrome.setMegaMenuDocked(!state.megaMenuDocked);
-      if (state.megaMenuDocked) {
-        chrome.setMegaMenuOpen(false);
+      const bookmarksItem = navItems.find((item) => item.id === 'bookmarks');
+      if (bookmarksItem) {
+        // Add children to the bookmarks section
+        bookmarksItem.children = pinnedItems.reduce((acc: NavModelItem[], url) => {
+          const item = findByUrl(navItems, url);
+          if (!item) {
+            return acc;
+          }
+          const newItem = {
+            id: item.id,
+            text: item.text,
+            url: item.url,
+            parentItem: { id: 'bookmarks', text: 'Bookmarks' },
+          };
+          acc.push(enrichWithInteractionTracking(newItem, state.megaMenuDocked));
+          return acc;
+        }, []);
       }
-    };
 
-    // Renders a single nav row. The pinned Starred section reuses this (via `options`) so its child
-    // icons, colours and loading state match the nav exactly — it only differs in a few visual tweaks
-    // and an independent collapse-state key.
-    const renderNavItem = (
-      link: NavModelItem,
-      key: string = link.text,
-      draggableProvided?: DraggableProvided,
-      options?: {
-        tightLabelGap?: boolean;
-        collapseEmptyControls?: boolean;
-        expandKeyPrefix?: string;
-        defaultExpanded?: boolean;
-      }
-    ) => (
-      <MegaMenuItem
-        key={key}
-        link={link}
-        isPinned={isPinned}
-        onClick={state.megaMenuDocked && !state.fullscreenWorkspace ? undefined : onClose}
-        activeItem={activeItem}
-        onPin={onPinItem}
-        editMode={editMode}
-        isHideable={isHideable}
-        isHidden={isHidden}
-        onToggleHidden={onToggleHidden}
-        ancestorHidden={false}
-        canCustomise={canCustomise}
-        draggableProvided={draggableProvided}
-        tightLabelGap={options?.tightLabelGap}
-        collapseEmptyControls={options?.collapseEmptyControls}
-        expandKeyPrefix={options?.expandKeyPrefix}
-        defaultExpanded={options?.defaultExpanded}
-        loadingChildren={link.id === 'starred' && starredItemsLoading}
-        childrenLoadError={link.id === 'starred' && starredItemsError}
-        disabled={isSaving}
-      />
-    );
+      const activeItem = getActiveItem(navItems, state.sectionNav.node, location.pathname);
 
-    const navLabel = t('navigation.megamenu.list-label', 'Navigation');
-    const pinnedListLabel = t('navigation.megamenu.pinned-list-label', 'Pinned items');
-    // The pinned list is named by its visible heading (aria-labelledby) rather than repeating the
-    // label as an aria-label, so screen readers don't announce "Pinned" twice.
-    const pinnedHeadingId = useId();
-    const sectionKey = (link: NavModelItem) => `section-${link.id ?? link.text}`;
-
-    const onPinnedDragEnd = (result: DropResult) => {
-      if (result.destination) {
-        onReorderPinned(result.source.index, result.destination.index);
-      }
-    };
-    const onSectionDragEnd = (result: DropResult) => {
-      if (result.destination) {
-        onReorderSection(result.source.index, result.destination.index);
-      }
-    };
-
-    // Unpin a pinned entry by toggling its url off (only the url is used when customisation is on).
-    const onUnpin = (url: string) => onPinItem({ text: '', url });
-
-    const renderPinnedEntry = (entry: (typeof pinnedEntries)[number], draggableProvided?: DraggableProvided) =>
-      // A whole-section pin (Starred) renders through the same MegaMenuItem the nav uses (via
-      // renderNavItem) so its per-kind child icons, colours and loading state match the nav exactly.
-      // The `pinned/` expand key keeps its collapse state independent of the nav copy, and the
-      // tighter label gap + collapsed empty control slot line it up with the breadcrumb rows beside it.
-      // Normal pins render as compact breadcrumbs.
-      entry.section ? (
-        renderNavItem(entry.section, entry.url, draggableProvided, {
-          tightLabelGap: true,
-          collapseEmptyControls: true,
-          expandKeyPrefix: 'pinned/',
-          defaultExpanded: true,
-        })
-      ) : (
-        <MegaMenuPinnedItem
-          key={entry.url}
-          line={entry.line}
-          activeItem={activeItem}
-          editMode={editMode}
-          onUnpin={() => onUnpin(entry.url)}
-          onClick={state.megaMenuDocked && !state.fullscreenWorkspace ? undefined : onClose}
-          draggableProvided={draggableProvided}
-          disabled={isSaving}
-        />
+      const isPinned = useCallback(
+        (url?: string) => {
+          if (!url || !pinnedItems?.length) {
+            return false;
+          }
+          return pinnedItems?.includes(url);
+        },
+        [pinnedItems]
       );
 
-    // Pinned box: a subtle grey box, with a "Pinned" heading, listing each pinned item as a compact
-    // horizontal breadcrumb. Entries are drag-reorderable while editing.
-    const renderPinnedBox = () =>
-      pinnedEntries.length > 0 && (
-        <>
-          <div className={styles.pinnedBox}>
-            <div className={styles.pinnedHeading} id={pinnedHeadingId}>
-              <Text variant="bodySmall" color="secondary" weight="medium">
-                {pinnedListLabel}
-              </Text>
-              <div className={styles.pinnedHeadingLine} />
-            </div>
-            {editMode ? (
-              <DragDropContext onDragEnd={onPinnedDragEnd}>
-                <Droppable droppableId="megamenu-pinned">
-                  {(dropProvided) => (
-                    <ul
-                      className={styles.list}
-                      aria-labelledby={pinnedHeadingId}
-                      ref={dropProvided.innerRef}
-                      {...dropProvided.droppableProps}
-                    >
-                      {pinnedEntries.map((entry, index) => (
-                        <Draggable
-                          key={entry.url}
-                          draggableId={`pinned-${entry.url}`}
-                          index={index}
-                          isDragDisabled={isSaving}
-                        >
-                          {(dragProvided) => renderPinnedEntry(entry, dragProvided)}
-                        </Draggable>
-                      ))}
-                      {dropProvided.placeholder}
-                    </ul>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            ) : (
-              <ul className={styles.list} aria-labelledby={pinnedHeadingId}>
-                {pinnedEntries.map((entry) => renderPinnedEntry(entry))}
-              </ul>
-            )}
-          </div>
-          <hr className={styles.dividerLine} />
-        </>
-      );
+      const onPinItem = (item: NavModelItem) => {
+        const { url } = item;
+        if (url) {
+          const isSaved = isPinned(url);
+          const newItems = isSaved ? pinnedItems.filter((i) => url !== i) : [...pinnedItems, url];
+          const interactionName = isSaved ? 'grafana_nav_item_unpinned' : 'grafana_nav_item_pinned';
+          reportInteraction(interactionName, {
+            path: url,
+          });
+          patchPreferences({
+            patchPrefsCmd: {
+              navbar: {
+                bookmarkUrls: newItems,
+              },
+            },
+          }).then((data) => {
+            if (!data.error) {
+              dispatch(setBookmark({ item: item, isSaved: !isSaved }));
+            }
+          });
+        }
+      };
 
-    // Top-level nav sections, drag-reorderable while editing.
-    const renderSectionList = () =>
-      editMode ? (
-        <DragDropContext onDragEnd={onSectionDragEnd}>
-          <Droppable droppableId="megamenu-sections">
-            {(dropProvided) => (
-              <ul
-                className={styles.itemList}
-                aria-label={navLabel}
-                ref={dropProvided.innerRef}
-                {...dropProvided.droppableProps}
-              >
-                {navItems.map((link, index) => (
-                  <Draggable
-                    key={sectionKey(link)}
-                    draggableId={sectionKey(link)}
-                    index={index}
-                    isDragDisabled={isSaving}
-                  >
-                    {(dragProvided) => renderNavItem(link, sectionKey(link), dragProvided)}
-                  </Draggable>
+      return (
+        <div data-testid={selectors.components.NavMenu.Menu} ref={ref} {...restProps}>
+          <MegaMenuHeader toggleSidebar={toggleSidebar} isMinimizeDockedView={isMinimized} />
+          <nav className={styles.content}>
+            <ScrollContainer id="mega-menu-content" height="100%" overflowX="hidden" showScrollIndicators>
+              <ul className={styles.itemList} aria-label={t('navigation.megamenu.list-label', 'Navigation')}>
+                {navItems.map((link) => (
+                  <MegaMenuItem
+                    key={link.text}
+                    link={link}
+                    isMinimizeDockedView={isMinimized}
+                    isPinned={isPinned}
+                    onClick={state.megaMenuDocked ? undefined : () => toggleSidebar(true)}
+                    activeItem={activeItem}
+                    onPin={onPinItem}
+                  />
                 ))}
-                {dropProvided.placeholder}
               </ul>
-            )}
-          </Droppable>
-        </DragDropContext>
-      ) : (
-        <ul className={styles.itemList} aria-label={navLabel}>
-          {navItems.map((link) => renderNavItem(link))}
-        </ul>
-      );
-
-    return (
-      <div data-testid={selectors.components.NavMenu.Menu} ref={ref} {...restProps}>
-        <MegaMenuHeader handleDockedMenu={handleDockedMenu} onClose={onClose} />
-        <nav className={cx(styles.content, state.megaMenuDocked && styles.contentDocked)} aria-label={navLabel}>
-          <div className={styles.scrollArea}>
-            <ScrollContainer height="100%" overflowX="hidden" showScrollIndicators={!visualRefreshEnabled}>
-              <>
-                {isLoading ? (
-                  <ul className={styles.itemList} aria-label={navLabel} aria-busy>
-                    <MegaMenuSkeleton />
-                  </ul>
-                ) : canCustomise ? (
-                  <>
-                    {renderPinnedBox()}
-                    {renderSectionList()}
-                  </>
-                ) : (
-                  <ul className={styles.itemList} aria-label={navLabel}>
-                    {navItems.map((link) => renderNavItem(link))}
-                  </ul>
-                )}
-                <MegaMenuExtensionPoint />
-              </>
+              <MegaMenuExtensionPoint />
             </ScrollContainer>
+            <div id="mega-menu-insertable-content" className={isMinimized ? 'minimized' : undefined} />
+          </nav>
+          <div
+            className={styles.resizer}
+            role="slider"
+            aria-valuenow={sidebarWidth}
+            tabIndex={0}
+            id="resizer"
+            ref={resizerRef}
+            onMouseDown={() => handleMouseDown()}
+            onDoubleClick={() => toggleSidebar()}
+          >
+            <div className={`${styles.resizerLine} resizer-line`} />
+            <div
+              className={`${styles.resizerSeparator} resizer-separator`}
+              role="slider"
+              aria-valuenow={sidebarWidth}
+              tabIndex={0}
+              onMouseDown={() => handleMouseDown()}
+              onDoubleClick={() => toggleSidebar()}
+            />
           </div>
-          <hr className={styles.dividerLine} />
-          <div className={cx(styles.footer, editMode && styles.footerEditMode)}>
-            {editMode && (
-              <MegaMenuCustomiseControls
-                canReset={canReset}
-                onResetToDefault={onResetToDefault}
-                onCancelEdit={onCancelEdit}
-                onSaveEdit={onSaveEdit}
-                saving={isSaving}
-              />
-            )}
-            {!editMode && canCustomise && !isLoading && (
-              <Button variant="secondary" onClick={onEnterEditMode} size="sm" icon="sliders-v-alt">
-                <Trans i18nKey="navigation.megamenu.customise">Customise navigation</Trans>
-              </Button>
-            )}
-            {!editMode && !state.fullscreenWorkspace && (
-              <IconButton
-                id={DOCK_MENU_BUTTON_ID}
-                className={styles.dockMenuButton}
-                tooltip={
-                  state.megaMenuDocked
-                    ? t('navigation.megamenu.undock', 'Undock menu')
-                    : t('navigation.megamenu.dock', 'Dock menu')
-                }
-                name="web-section-alt"
-                onClick={handleDockedMenu}
-                variant="secondary"
-              />
-            )}
-          </div>
-        </nav>
-      </div>
-    );
-  })
+        </div>
+      );
+    }
+  )
 );
 
 MegaMenu.displayName = 'MegaMenu';
 
-const getStyles = (theme: GrafanaTheme2, visualRefreshEnabled: boolean) => {
+const getStyles = (theme: GrafanaTheme2, sidebarWidth: number) => {
+  const currentMenuWidth = sidebarWidth ? `${sidebarWidth}px` : `${MENU_WIDTH}px`;
+
   return {
     content: css({
       display: 'flex',
@@ -299,79 +160,90 @@ const getStyles = (theme: GrafanaTheme2, visualRefreshEnabled: boolean) => {
       minHeight: 0,
       flexGrow: 1,
       position: 'relative',
-      paddingTop: theme.spacing(0.5),
     }),
-    contentDocked: css({
-      paddingTop: theme.spacing(0),
-    }),
-    scrollArea: css({
-      flex: 1,
-      minHeight: 0,
+    mobileHeader: css({
+      display: 'flex',
+      justifyContent: 'space-between',
+      padding: theme.spacing(1, 1, 1, 2),
+      borderBottom: `1px solid ${theme.colors.border.weak}`,
+
+      [theme.breakpoints.up('md')]: {
+        display: 'none',
+      },
     }),
     itemList: css({
       boxSizing: 'border-box',
       display: 'flex',
       flexDirection: 'column',
       listStyleType: 'none',
-      padding: theme.spacing(1, 1, 2, 1),
+      padding: theme.spacing(1, 1, 0.5, 0.75),
       [theme.breakpoints.up('md')]: {
-        width: MENU_WIDTH,
+        width: currentMenuWidth,
       },
     }),
-    list: css({
+    toggleContainer: css({
+      boxSizing: 'border-box',
       display: 'flex',
       flexDirection: 'column',
       listStyleType: 'none',
-      padding: 0,
-      margin: 0,
-    }),
-    pinnedBox: css({
-      margin: visualRefreshEnabled ? theme.spacing(0, 1, 1, 1) : theme.spacing(1, 1, 0, 1),
-    }),
-    // "Pinned" heading row — a small section label (the medium-weight secondary Text below reads as
-    // a heading, distinct from the pinned item rows). The icon column matches the item rows so it
-    // still lines up.
-    pinnedHeading: css({
-      alignItems: 'center',
-      color: theme.colors.text.secondary,
-      display: 'flex',
-      gap: theme.spacing(1),
-      height: theme.spacing(3.5),
-      // Matches the item rows' label inset so the heading icon lines up with the pinned item icons.
-      paddingLeft: theme.spacing(1),
-      marginBottom: theme.spacing(0.5),
-    }),
-    pinnedHeadingLine: css({
-      flexGrow: 1,
-      height: '1px',
-      background: `linear-gradient(90deg, ${theme.colors.border.weak} 65%, transparent 100%)`,
-    }),
-    // Divider separating the pinned box from the rest of the nav, and nav from footer
-    dividerLine: css({
-      border: 'none',
-      flexShrink: 0,
-      height: 1,
-      background: `linear-gradient(90deg, transparent 0%, ${theme.colors.border.weak} 20%, ${theme.colors.border.weak} 80%, transparent 100%)`,
-      margin: theme.spacing(1),
-    }),
-    // Edit-mode footer: the Reset/Cancel/Done controls
-    footer: css({
-      alignItems: 'center',
-      display: 'flex',
-      flexShrink: 0,
-      justifyContent: 'space-between',
-      padding: theme.spacing(0.5, 2, 1.5, 2),
-    }),
-    footerEditMode: css({
-      justifyContent: 'center',
+      padding: theme.spacing(1, 1, 0, 0.5),
+      [theme.breakpoints.up('md')]: {
+        width: currentMenuWidth,
+      },
     }),
     dockMenuButton: css({
       display: 'none',
-      marginLeft: 'auto',
+      position: 'relative',
+      top: theme.spacing(1),
 
       [theme.breakpoints.up('xl')]: {
         display: 'inline-flex',
       },
+    }),
+    resizer: css({
+      flexDirection: 'column',
+      display: 'flex',
+      alignItems: 'end',
+      justifyContent: 'center',
+      position: 'absolute',
+      zIndex: 1000,
+      top: 0,
+      right: '-11px',
+      width: '13px',
+      height: '100%',
+      cursor: 'ew-resize',
+      background: 'transparent',
+      '&:hover .resizer-separator': {
+        background: `${theme.colors.text.link}`,
+      },
+      '&:hover .resizer-line': {
+        background: `${theme.colors.text.link}`,
+      },
+
+      // Don`t display resizer for screens width less than 1200 px
+      [theme.breakpoints.down('xl')]: {
+        display: 'none',
+      },
+    }),
+    resizerLine: css({
+      flexDirection: 'column',
+      display: 'flex',
+      alignItems: 'end',
+      justifyContent: 'center',
+      position: 'absolute',
+      top: 0,
+      right: '10px',
+      width: '1px',
+      height: '100%',
+      cursor: 'ew-resize',
+      background: 'transparent',
+    }),
+    resizerSeparator: css({
+      width: '5px',
+      height: '200px',
+      marginRight: '8px',
+      background: `${theme.colors.emphasize(theme.colors.background.secondary, 0.15)}`,
+      borderRadius: `2px`,
     }),
   };
 };

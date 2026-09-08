@@ -28,7 +28,7 @@ export const getEnrichedHelpItem = (helpItem: NavModelItem): NavModelItem => {
 
   return {
     ...helpItem,
-    subTitle: config.buildInfo.versionString,
+    subTitle: helpItem.subTitle ?? config.buildInfo.versionString,
     children: [
       ...menuItems,
       ...getFooterLinks(),

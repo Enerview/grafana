@@ -1,5 +1,5 @@
 import { css, cx } from '@emotion/css';
-import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useMemo } from 'react';
 import { useMedia } from 'react-use';
 
 import { type GrafanaTheme2 } from '@grafana/data';
@@ -15,8 +15,10 @@ import {
   Sidebar,
   type SidebarContextValue,
 } from '@grafana/ui';
+import { getChromeHeaderLevelHeight } from 'app/core/components/AppChrome/TopBar/useChromeHeaderHeight';
 import NativeScrollbar, { DivScrollElement } from 'app/core/components/NativeScrollbar';
 import { useGrafana } from 'app/core/context/GrafanaContext';
+import { contextSrv } from 'app/core/services/context_srv';
 import { getDashboardSrv } from 'app/features/dashboard/services/DashboardSrv';
 import { playlistSrv } from 'app/features/playlist/PlaylistSrv';
 import { KioskMode } from 'app/types/dashboard';
@@ -47,7 +49,15 @@ export function DashboardSidebarSplitter(props: Props) {
 }
 
 function DashboardSidebarSplitterLegacy({ dashboard, body, controls }: Props) {
-  const styles = useStyles2(getStyles);
+  const headerHeight = useChromeHeaderHeight();
+  const currentHeaderHeight = useMemo(() => {
+    if (!contextSrv.isEditor) {
+      return getChromeHeaderLevelHeight();
+    }
+    return headerHeight ?? 0;
+  }, [headerHeight]);
+
+  const styles = useStyles2(getStyles, currentHeaderHeight ?? 0);
 
   return (
     <NativeScrollbar onSetScrollRef={dashboard.onSetScrollRef}>

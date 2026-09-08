@@ -2,7 +2,7 @@ import { type ChangeEvent } from 'react';
 
 import { type PanelOptionsEditorBuilder, standardEditorsRegistry, type StatsPickerConfigSettings } from '@grafana/data';
 import { t } from '@grafana/i18n';
-import { LegendDisplayMode, type OptionsWithLegend } from '@grafana/schema';
+import { LegendDisplayMode, LegendDurationMode, type OptionsWithLegend } from '@grafana/schema';
 
 import { Input } from '../../components/Input/Input';
 
@@ -10,7 +10,8 @@ import { Input } from '../../components/Input/Input';
 export function addLegendOptions<T extends OptionsWithLegend>(
   builder: PanelOptionsEditorBuilder<T>,
   includeLegendCalcs = true,
-  showLegend = true
+  showLegend = true,
+  includeDuration = false
 ) {
   const category = [t('grafana-ui.builder.legend.category', 'Legend')];
 
@@ -99,6 +100,32 @@ export function addLegendOptions<T extends OptionsWithLegend>(
       description: t('grafana-ui.builder.legend.description-limit', 'Limits how many items are shown by default'),
       showIf: (c) => c.legend.showLegend,
     });
+
+  if (includeDuration) {
+    builder.addRadio({
+      path: 'legend.durationMode',
+      name: 'Duration',
+      category: ['Legend'],
+      description: '',
+      defaultValue: LegendDurationMode.Off,
+      settings: {
+        options: [
+          {
+            value: LegendDurationMode.Off,
+            label: 'Off',
+          },
+          {
+            value: LegendDurationMode.Percentage,
+            label: 'Percentage',
+          },
+          {
+            value: LegendDurationMode.Absolute,
+            label: 'Absolute',
+          },
+        ],
+      },
+    });
+  }
 
   if (includeLegendCalcs) {
     builder.addCustomEditor<StatsPickerConfigSettings, string[]>({
