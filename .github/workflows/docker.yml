@@ -24,8 +24,8 @@ jobs:
 
       - name: Install tools
         run: |
-          apk update
-          apk add --no-cache make go
+          sudo apt-get update
+          sudo apt-get install -y make golang-go
 
       - name: Build a Docker image
         run: make build-docker-full
