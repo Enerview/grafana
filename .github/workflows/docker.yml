@@ -1,0 +1,26 @@
+name: Docker
+
+on:
+  workflow_dispatch:
+
+jobs:
+  docker:
+    # High-RAM self-hosted ARC runner (m.2xlarge, dind) for the from-source
+    # frontend build (was ubuntu-latest).
+    runs-on: arc-runner-set-grafana
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          # Use the pull_request head ref if it's a PR, otherwise default
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: "yarn"
+
+      - name: Build a Docker image
+        run: make build-docker-full
