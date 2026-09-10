@@ -22,5 +22,10 @@ jobs:
           node-version: "22"
           cache: "npm"
 
+      - name: Install tools
+        run: |
+          apk update
+          apk add --no-cache make go
+
       - name: Build a Docker image
         run: make build-docker-full
