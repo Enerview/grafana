@@ -40,5 +40,5 @@ jobs:
 
       - name: Tag and Push Image
         run: |
-          docker tag docker.io/grafana/grafana-oss:dev ghcr.io/${{ github.repository_owner }}/grafana:13.2-1
-          docker push ghcr.io/${{ github.repository_owner }}/grafana:13.2-1
+          docker tag docker.io/grafana/grafana-oss:dev ghcr.io/enerview/grafana:13.2-1
+          docker push ghcr.io/enerview/grafana:13.2-1
