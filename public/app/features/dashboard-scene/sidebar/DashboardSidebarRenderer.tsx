@@ -52,6 +52,7 @@ export function DashboardSidebarRenderer({ dashboard }: Props) {
   const viewPanelPane = useFlagGrafanaViewPanelPane();
   const globalDashboardVariablesEnabled = useFlagGrafanaDashboardGlobalVariables();
   const feedbackButton = useFlagFeedbackButton();
+  const isExportEnabled = false;
 
   const onClickHideSidebar: React.MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
@@ -143,7 +144,7 @@ export function DashboardSidebarRenderer({ dashboard }: Props) {
           </div>
         )}
         <div className={styles.viewGroup}>
-          {hasUid && !isEmbedded && <ShareExportDashboardButton dashboard={dashboard} />}
+          {hasUid && !isEmbedded && isExportEnabled && <ShareExportDashboardButton dashboard={dashboard} />}
           <Sidebar.Button
             icon="list-ui-alt"
             onClick={() => {
