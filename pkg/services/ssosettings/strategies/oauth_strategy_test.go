@@ -106,6 +106,7 @@ var (
 		"name_attribute_path":           "name",
 		"team_ids":                      "first, second",
 		"org_attribute_path":            "groups",
+		"default_team":                  "",
 		"org_mapping":                   "Group1:*:Editor",
 		"login_prompt":                  "select_account",
 		"jwk_set_url":                   "",
