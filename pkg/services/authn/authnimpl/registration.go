@@ -122,9 +122,11 @@ func ProvideRegistration(
 	authnSvc.RegisterPostAuthHook(userSync.EnableUserHook, 20)
 	authnSvc.RegisterPostAuthHook(orgSync.SyncOrgRolesHook, 40)
 	// Runs after org sync so the identity's org - and therefore the org the
-	// team is looked up in - is settled, and before permissions are synced so a
-	// new membership takes effect on the login that created it.
-	teamSync := sync.ProvideTeamSync(teamService, teamPermissionsService, userService, socialService, tracer)
+	// team is looked up in - is settled, and before FetchSyncedUserHook and the
+	// permission sync so a new membership takes effect on the login that
+	// created it. As a post login hook it would run after the user, with their
+	// team ids, had already been fetched and cached for this login.
+	teamSync := sync.ProvideTeamSync(teamService, teamPermissionsService, userService, orgService, socialService, cfg.DefaultTeam, tracer)
 	authnSvc.RegisterPostAuthHook(teamSync.SyncDefaultTeamHook, 45)
 	authnSvc.RegisterPostAuthHook(userSync.SyncLastSeenHook, 130)
 	authnSvc.RegisterPostAuthHook(sync.ProvideOAuthTokenSync(oauthTokenService, sessionService, socialService, tracer, features).SyncOauthTokenHook, 60)

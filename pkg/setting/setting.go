@@ -533,6 +533,7 @@ type Cfg struct {
 	AutoAssignOrg                  bool
 	AutoAssignOrgId                int
 	AutoAssignOrgRole              string
+	DefaultTeam                    string
 	LoginDefaultOrgId              int64
 	OAuthSkipOrgRoleUpdateSync     bool
 
@@ -2203,6 +2204,7 @@ func readUserSettings(iniFile *ini.File, cfg *Cfg) error {
 			string(identity.RoleEditor),
 			string(identity.RoleAdmin),
 		})
+	cfg.DefaultTeam = valueAsString(users, "default_team", "")
 	cfg.VerifyEmailEnabled = users.Key("verify_email_enabled").MustBool(false)
 
 	// Deprecated
