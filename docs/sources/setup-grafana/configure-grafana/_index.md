@@ -986,6 +986,20 @@ You can set this to one of the following roles: (`Viewer` (default), `Admin`, `E
 
 `auto_assign_org_role = Viewer`
 
+#### `default_team`
+
+The name of an existing Grafana team that users are added to every time they sign in. The team must already exist in the organization the user signs in to; it is not created for you. Empty by default, which disables the behavior.
+
+This applies to interactive sign-ins: the Grafana login form (built-in users and LDAP) and OAuth providers. It doesn't apply to authentication that happens on every request without a sign-in, such as the auth proxy, JWT authentication, basic authentication on API requests, API keys, and service accounts.
+
+A provider that sets its own `default_team` (see the `[auth.<provider>]` sections) replaces this value for users signing in through that provider rather than adding to it, so a sign-in never results in more than one automatic team membership.
+
+The team is looked up by name, ignoring case, in the organization the user signs in to. If the user isn't a member of the organization requested at sign-in, their default organization is used instead. Renaming the team stops the assignment until you update this setting.
+
+Members are never removed, so clearing this setting leaves previously assigned memberships in place. Users who are already members are left untouched, including anyone promoted to team administrator.
+
+`default_team = Everyone`
+
 #### `verify_email_enabled`
 
 Require email validation before sign up completes or when updating a user email address. Default is `false`.
