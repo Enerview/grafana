@@ -53,6 +53,7 @@ export function DashboardSidebarRenderer({ dashboard }: Props) {
   const globalDashboardVariablesEnabled = useFlagGrafanaDashboardGlobalVariables();
   const feedbackButton = useFlagFeedbackButton();
   const isExportEnabled = false;
+  const isContentOutlineEnabled = false;
 
   const onClickHideSidebar: React.MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
@@ -145,17 +146,19 @@ export function DashboardSidebarRenderer({ dashboard }: Props) {
         )}
         <div className={styles.viewGroup}>
           {hasUid && !isEmbedded && isExportEnabled && <ShareExportDashboardButton dashboard={dashboard} />}
-          <Sidebar.Button
-            icon="list-ui-alt"
-            onClick={() => {
-              DashboardInteractions.dashboardOutlineClicked();
-              sidebar.openPane(outlinePane!);
-            }}
-            title={t('dashboard.sidebar.outline.title', 'Outline')}
-            tooltip={t('dashboard.sidebar.outline.tooltip', 'Content outline')}
-            data-testid={selectors.pages.Dashboard.Sidebar.outlineButton}
-            active={openPane instanceof DashboardOutline}
-          />
+          {isContentOutlineEnabled && (
+            <Sidebar.Button
+              icon="list-ui-alt"
+              onClick={() => {
+                DashboardInteractions.dashboardOutlineClicked();
+                sidebar.openPane(outlinePane!);
+              }}
+              title={t('dashboard.sidebar.outline.title', 'Outline')}
+              tooltip={t('dashboard.sidebar.outline.tooltip', 'Content outline')}
+              data-testid={selectors.pages.Dashboard.Sidebar.outlineButton}
+              active={openPane instanceof DashboardOutline}
+            />
+          )}
           {config.featureToggles.dashboardNewLayouts && config.featureToggles.dashboardUnifiedDrilldownControls && (
             <FiltersOverviewButton sidebar={sidebar} openPane={openPane} />
           )}
