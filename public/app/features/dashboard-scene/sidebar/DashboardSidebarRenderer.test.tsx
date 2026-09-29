@@ -7,6 +7,8 @@ import { selectors } from '@grafana/e2e-selectors';
 import { setPluginImportUtils, setPluginLinksHook, config } from '@grafana/runtime';
 import { SceneGridLayout, SceneTimeRange, SceneVariableSet, VizPanel } from '@grafana/scenes';
 
+import { contextSrv } from 'app/core/services/context_srv';
+
 import { DashboardDataLayerSet } from '../scene/DashboardDataLayerSet';
 import { DashboardScene } from '../scene/DashboardScene';
 import { DashboardGridItem } from '../scene/layout-default/DashboardGridItem';
@@ -79,6 +81,8 @@ export function buildTestScene() {
 describe('DashboardSidebarRenderer', () => {
   beforeEach(() => {
     config.featureToggles.dashboardNewLayouts = true;
+    // The sidebar is only rendered for editors and admins
+    contextSrv.isEditor = true;
     // Sidebar state is persisted to localStorage — clear between tests so each test
     // starts with the default visibility/dock state.
     window.localStorage.clear();

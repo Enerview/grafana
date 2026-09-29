@@ -6,6 +6,7 @@ import { getPanelPlugin } from '@grafana/data/test';
 import { selectors } from '@grafana/e2e-selectors';
 import { setPluginImportUtils, setPluginLinksHook, config } from '@grafana/runtime';
 import { SceneGridLayout, SceneTimeRange, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { contextSrv } from 'app/core/services/context_srv';
 
 import { DashboardDataLayerSet } from '../scene/DashboardDataLayerSet';
 import { DashboardScene } from '../scene/DashboardScene';
@@ -30,8 +31,15 @@ const autoLayoutInputs = [
 ];
 
 describe('DashboardSidebarSplitter', () => {
+  const originalIsEditor = contextSrv.isEditor;
+
   beforeEach(() => {
     config.featureToggles.dashboardNewLayouts = true;
+    contextSrv.isEditor = true;
+  });
+
+  afterEach(() => {
+    contextSrv.isEditor = originalIsEditor;
   });
 
   it('should switch between custom and auto layout', async () => {
@@ -71,6 +79,19 @@ describe('DashboardSidebarSplitter', () => {
 
     const scrollContainer = screen.getByTestId(selectors.components.DashboardSidebarSplitter.bodyContainer);
     expect(scrollContainer).toHaveAttribute('tabindex', '0');
+  });
+
+  describe('viewers and guests', () => {
+    beforeEach(() => {
+      contextSrv.isEditor = false;
+    });
+
+    it('should hide the sidebar', () => {
+      render(<DashboardSidebarSplitter dashboard={buildTestScene()} />);
+
+      expect(screen.queryByTestId(selectors.components.DashboardSidebarSplitter.bodyContainer)).not.toBeInTheDocument();
+      expect(screen.queryByTestId(selectors.pages.Dashboard.Sidebar.optionsButton)).not.toBeInTheDocument();
+    });
   });
 });
 

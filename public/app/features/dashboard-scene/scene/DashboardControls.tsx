@@ -21,7 +21,7 @@ import {
   type SceneVariable,
   SceneVariableSet,
 } from '@grafana/scenes';
-import { Box, Button, ButtonGroup, useStyles2 } from '@grafana/ui';
+import { Box, Button, ButtonGroup, ToolbarButton, useStyles2 } from '@grafana/ui';
 import { useGrafana } from 'app/core/context/GrafanaContext';
 import { contextSrv } from 'app/core/services/context_srv';
 import { playlistSrv } from 'app/features/playlist/PlaylistSrv';
@@ -294,7 +294,7 @@ function DashboardControlActions({
   dashboard: DashboardScene;
   hidePlaylistNav?: boolean;
 }) {
-  const { isEditing, editPanel, uid, meta, editable } = dashboard.useState();
+  const { isEditing, editPanel, uid, meta, editable, viewPanel } = dashboard.useState();
   const { isPlaying } = playlistSrv.useState();
   const { chrome } = useGrafana();
   const { kioskMode } = chrome.useState();
@@ -313,6 +313,7 @@ function DashboardControlActions({
   const isEditable = Boolean(editable);
   const isEditingLibraryPanel = Boolean(editPanel && isLibraryPanel(editPanel.state.panelRef.resolve()));
 
+  const showBackButton = !contextSrv.isEditor && Boolean(viewPanel) && !isPlaying && !editPanel;
   const showShareButton = hasUid && !isSnapshot && !isEmbedded && !isPlaying && !editPanel;
   const showSaveButton = isEditing && (canSave || canSaveAs) && !isEditingLibraryPanel;
   const showEditButton = hasUid && !isPlaying && canEditDashboard && isEditable && !editPanel;
@@ -321,6 +322,16 @@ function DashboardControlActions({
 
   return (
     <>
+      {showBackButton && (
+        <ToolbarButton
+          variant="canvas"
+          icon="arrow-left"
+          onClick={() => locationService.partial({ viewPanel: null })}
+          data-testid="dashboard-back-button"
+        >
+          <Trans i18nKey="dashboard.toolbar.new.back-to-dashboard">Back to dashboard</Trans>
+        </ToolbarButton>
+      )}
       {showShareButton && <ShareDashboardButton dashboard={dashboard} />}
       {showSaveButton && <SaveDashboard dashboard={dashboard} />}
       {showEditButton && <EditDashboardSwitch dashboard={dashboard} />}

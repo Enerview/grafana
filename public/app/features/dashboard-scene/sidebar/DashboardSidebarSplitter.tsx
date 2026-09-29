@@ -17,6 +17,7 @@ import {
 } from '@grafana/ui';
 import NativeScrollbar, { DivScrollElement } from 'app/core/components/NativeScrollbar';
 import { useGrafana } from 'app/core/context/GrafanaContext';
+import { contextSrv } from 'app/core/services/context_srv';
 import { getDashboardSrv } from 'app/features/dashboard/services/DashboardSrv';
 import { playlistSrv } from 'app/features/playlist/PlaylistSrv';
 import { KioskMode } from 'app/types/dashboard';
@@ -66,6 +67,8 @@ function DashboardSidebarSplitterNewLayouts({ dashboard, isEditing, body, contro
   const { chrome } = useGrafana();
   const { kioskMode } = chrome.useState();
   const { isPlaying } = playlistSrv.useState();
+  // Viewers and guests (anything below Editor) get no sidebar, only a back button
+  const isRestrictedUser = !contextSrv.isEditor;
 
   /**
    * Adds star button and left side actions to app chrome breadcrumb area
@@ -124,7 +127,7 @@ function DashboardSidebarSplitterNewLayouts({ dashboard, isEditing, body, contro
   };
 
   function renderBody() {
-    const renderWithoutSidebar = isPlaying || kioskMode === KioskMode.Full;
+    const renderWithoutSidebar = isPlaying || kioskMode === KioskMode.Full || isRestrictedUser;
 
     // In kiosk mode the full document body scrolls so we don't need to wrap in our own scrollbar
     if (renderWithoutSidebar) {
