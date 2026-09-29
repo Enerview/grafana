@@ -566,6 +566,50 @@ describe('DashboardControls', () => {
     });
   });
 
+  describe('DashboardControlActions back button', () => {
+    const originalFeatureToggles = { ...config.featureToggles };
+
+    beforeEach(() => {
+      jest.mocked(playlistSrv.useState).mockReturnValue({ isPlaying: false });
+      config.featureToggles.dashboardNewLayouts = true;
+    });
+
+    afterEach(() => {
+      config.featureToggles = originalFeatureToggles;
+      contextSrv.isEditor = true;
+      jest.resetAllMocks();
+    });
+
+    it('should show the back button to viewers when viewing a panel and exit the panel view on click', async () => {
+      contextSrv.isEditor = false;
+      const partialSpy = jest.spyOn(locationService, 'partial').mockImplementation(() => {});
+      const controls = buildTestSceneWithEditable({ editable: true, canEdit: false });
+      getDashboardSceneFor(controls).setState({ viewPanel: 'panel-1' });
+      renderInGrafanaContext(<controls.Component model={controls} />, undefined);
+
+      await userEvent.click(await screen.findByTestId('dashboard-back-button'));
+
+      expect(partialSpy).toHaveBeenCalledWith({ viewPanel: null });
+    });
+
+    it('should not show the back button to viewers when not viewing a panel', () => {
+      contextSrv.isEditor = false;
+      const controls = buildTestSceneWithEditable({ editable: true, canEdit: false });
+      renderInGrafanaContext(<controls.Component model={controls} />, undefined);
+
+      expect(screen.queryByTestId('dashboard-back-button')).not.toBeInTheDocument();
+    });
+
+    it('should not show the back button to editors', () => {
+      contextSrv.isEditor = true;
+      const controls = buildTestSceneWithEditable({ editable: true, canEdit: true });
+      getDashboardSceneFor(controls).setState({ viewPanel: 'panel-1' });
+      renderInGrafanaContext(<controls.Component model={controls} />, undefined);
+
+      expect(screen.queryByTestId('dashboard-back-button')).not.toBeInTheDocument();
+    });
+  });
+
   describe('DashboardControlActions save button visibility', () => {
     const originalFeatureToggles = { ...config.featureToggles };
     const mockedContextSrv = jest.mocked(contextSrv);
