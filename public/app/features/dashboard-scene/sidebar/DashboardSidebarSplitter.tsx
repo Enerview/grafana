@@ -272,6 +272,11 @@ function getStyles(theme: GrafanaTheme2) {
       },
     }),
     bodyWrapperKiosk: css({
+      // The document itself scrolls here, so let the wrapper (and the container around it) grow with
+      // the content. Otherwise the container ends at the viewport height and the sticky controls
+      // bar scrolls away with it.
+      flex: '1 0 auto',
+      minHeight: 'auto',
       padding: theme.spacing(0, 2, 2, 2),
     }),
     scrollContainer: css({
