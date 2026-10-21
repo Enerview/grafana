@@ -2,6 +2,23 @@ name: Docker
 
 on:
   workflow_dispatch:
+    inputs:
+      revision:
+        description: "Image revision — pushed as ghcr.io/enerview/grafana:13.2-<revision>"
+        type: choice
+        required: true
+        default: "2"
+        options:
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+          - "5"
+          - "6"
+          - "7"
+          - "8"
+          - "9"
+          - "10"
 
 jobs:
   docker:
@@ -40,5 +57,5 @@ jobs:
 
       - name: Tag and Push Image
         run: |
-          docker tag docker.io/grafana/grafana-oss:dev ghcr.io/enerview/grafana:13.2-1
-          docker push ghcr.io/enerview/grafana:13.2-1
+          docker tag docker.io/grafana/grafana-oss:dev ghcr.io/enerview/grafana:13.2-${{ inputs.revision }}
+          docker push ghcr.io/enerview/grafana:13.2-${{ inputs.revision }}
