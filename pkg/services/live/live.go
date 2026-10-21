@@ -148,7 +148,21 @@ func ProvideService(cfg *setting.Cfg, routeRegister routing.RouteRegister, plugC
 	var managedStreamRunner *managedstream.Runner
 	var redisClient *redis.Client
 	if g.IsHA() && redisHealthy {
-		redisClient = redis.NewClient(redisOptions)
+		if g.Cfg.LiveHAEngineSentinelMasterName != "" {
+			// Sentinel-backed master discovery (mirrors setupRedisLiveEngine).
+			redisClient = redis.NewFailoverClient(&redis.FailoverOptions{
+				MasterName:       g.Cfg.LiveHAEngineSentinelMasterName,
+				SentinelAddrs:    splitLiveRedisAddresses(g.Cfg.LiveHAEngineSentinelAddresses),
+				SentinelUsername: g.Cfg.LiveHAEngineSentinelUser,
+				SentinelPassword: g.Cfg.LiveHAEngineSentinelPassword,
+				Password:         g.Cfg.LiveHAEnginePassword,
+			})
+		} else {
+			// Direct address: redisOptions is parsed from ha_engine_address by
+			// redisClientOptions, which handles redis:// / rediss:// URLs, TLS and
+			// credential precedence.
+			redisClient = redis.NewClient(redisOptions)
+		}
 		cmd := redisClient.Ping(context.Background())
 		if _, err := cmd.Result(); err != nil {
 			logger.Error("live engine failed to ping redis, proceeding with in-memory frame cache", "error", err)
@@ -445,14 +459,36 @@ func redisClientOptions(cfg *setting.Cfg) (*redis.Options, error) {
 	return options, nil
 }
 
+// splitLiveRedisAddresses splits a comma-separated list of "host:port" Sentinel
+// addresses, trimming whitespace and dropping empty entries.
+func splitLiveRedisAddresses(s string) []string {
+	parts := strings.Split(s, ",")
+	addrs := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if p = strings.TrimSpace(p); p != "" {
+			addrs = append(addrs, p)
+		}
+	}
+	return addrs
+}
+
 func setupRedisLiveEngine(g *GrafanaLive, node *centrifuge.Node) error {
 	// Centrifuge parses redis:// and rediss:// (TLS) connection URLs in
 	// Address natively, so ha_engine_address is passed through as-is.
 	redisAddress := g.Cfg.LiveHAEngineAddress
 	redisPassword := g.Cfg.LiveHAEnginePassword
-	redisShardConfigs := []centrifuge.RedisShardConfig{
-		{Address: redisAddress, Password: redisPassword},
+	redisShardConfig := centrifuge.RedisShardConfig{Address: redisAddress, Password: redisPassword}
+	// Optional Redis Sentinel: when a master name is configured, Live discovers
+	// the master via Sentinel instead of connecting to ha_engine_address
+	// directly. This lets Live reuse an existing Sentinel HA Redis (e.g. the one
+	// already wired to unified alerting) instead of a dedicated standalone node.
+	if g.Cfg.LiveHAEngineSentinelMasterName != "" {
+		redisShardConfig.SentinelMasterName = g.Cfg.LiveHAEngineSentinelMasterName
+		redisShardConfig.SentinelAddresses = splitLiveRedisAddresses(g.Cfg.LiveHAEngineSentinelAddresses)
+		redisShardConfig.SentinelUser = g.Cfg.LiveHAEngineSentinelUser
+		redisShardConfig.SentinelPassword = g.Cfg.LiveHAEngineSentinelPassword
 	}
+	redisShardConfigs := []centrifuge.RedisShardConfig{redisShardConfig}
 
 	redisShards := make([]*centrifuge.RedisShard, 0, len(redisShardConfigs))
 	for _, redisConf := range redisShardConfigs {
