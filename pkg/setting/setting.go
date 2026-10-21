@@ -431,17 +431,6 @@ type Cfg struct {
 	// LiveHAEngineAddress is a connection address for Live HA engine.
 	LiveHAEngineAddress  string
 	LiveHAEnginePassword string
-	// LiveHAEngineSentinelMasterName enables Redis Sentinel for the Live HA
-	// engine. When non-empty, Live discovers the master via the Sentinel
-	// addresses below instead of connecting to LiveHAEngineAddress directly.
-	LiveHAEngineSentinelMasterName string
-	// LiveHAEngineSentinelAddresses is a comma-separated list of Sentinel
-	// "host:port" addresses used to discover the Live HA Redis master.
-	LiveHAEngineSentinelAddresses string
-	// LiveHAEngineSentinelUser and LiveHAEngineSentinelPassword authenticate to
-	// the Sentinels (password requires Sentinel >= 5.0.1).
-	LiveHAEngineSentinelUser     string
-	LiveHAEngineSentinelPassword string
 	// LiveAllowedOrigins is a set of origins accepted by Live. If not provided
 	// then Live uses AppURL as the only allowed origin.
 	LiveAllowedOrigins []string
@@ -2054,10 +2043,6 @@ func (cfg *Cfg) readLiveSettings(iniFile *ini.File) error {
 	cfg.LiveHAPrefix = section.Key("ha_prefix").MustString("")
 	cfg.LiveHAEngineAddress = section.Key("ha_engine_address").MustString("127.0.0.1:6379")
 	cfg.LiveHAEnginePassword = section.Key("ha_engine_password").MustString("")
-	cfg.LiveHAEngineSentinelMasterName = section.Key("ha_engine_sentinel_master_name").MustString("")
-	cfg.LiveHAEngineSentinelAddresses = section.Key("ha_engine_sentinel_addresses").MustString("")
-	cfg.LiveHAEngineSentinelUser = section.Key("ha_engine_sentinel_user").MustString("")
-	cfg.LiveHAEngineSentinelPassword = section.Key("ha_engine_sentinel_password").MustString("")
 
 	allowedOrigins := section.Key("allowed_origins").MustString("")
 	origins := strings.Split(allowedOrigins, ",")
