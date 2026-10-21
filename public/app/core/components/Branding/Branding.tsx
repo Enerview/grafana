@@ -115,6 +115,9 @@ export function HomeTitle({ homeNav, onClick }: { homeNav?: NavModelItem; onClic
 function homeTitleStyles(theme: GrafanaTheme2) {
   return {
     homeTitle: css({
+      // Let the title shrink inside the header flex row so the nested span truncates with an ellipsis
+      display: 'flex',
+      minWidth: 0,
       borderRadius: theme.shape.radius.default,
       color: theme.colors.text.primary,
       padding: theme.spacing(0.25, 0.75),
