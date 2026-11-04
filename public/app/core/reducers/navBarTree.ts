@@ -31,7 +31,8 @@ export interface StarredNavItem {
 }
 // Single shared collator avoids per-call Intl.Collator construction
 const collator = new Intl.Collator();
-// Starred children group by sortWeight (dashboards carry none, folders a positive weight), alphabetical within a group.
+// Starred children order by sortWeight (the time they were starred, items starred before tracking carry none
+// and folders without a known time a weight of 1), alphabetical within the same weight.
 // Shared so setStarred (optimistic), setStarredItems (sync), and updateDashboardName (rename) never diverge and reorder the nav.
 const compareStarredChildren = (a: NavModelItem, b: NavModelItem): number =>
   (a.sortWeight ?? 0) - (b.sortWeight ?? 0) || collator.compare(a.text, b.text);

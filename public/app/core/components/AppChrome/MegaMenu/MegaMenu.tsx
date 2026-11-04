@@ -7,6 +7,7 @@ import { selectors } from '@grafana/e2e-selectors';
 import { t } from '@grafana/i18n';
 import { ScrollContainer, useStyles2 } from '@grafana/ui';
 import { useGrafana } from 'app/core/context/GrafanaContext';
+import { useSyncStarredItemsInNav } from 'app/features/stars/hooks';
 
 import { MegaMenuExtensionPoint } from './MegaMenuExtensionPoint';
 import { MegaMenuHeader } from './MegaMenuHeader';
@@ -30,6 +31,7 @@ export const MegaMenu = memo(
       const { chrome } = useGrafana();
       const state = chrome.useState();
       const { navItems, activeItem, isPinned, onPinItem } = useNavCustomization();
+      useSyncStarredItemsInNav();
 
       return (
         <div data-testid={selectors.components.NavMenu.Menu} ref={ref} {...restProps}>
