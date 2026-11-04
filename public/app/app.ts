@@ -44,6 +44,7 @@ import {
   setPanelScreenshotService,
   setPluginFunctionsHook,
   setMegaMenuOpenHook,
+  setStarredItemsSrv,
 } from '@grafana/runtime';
 import {
   getPanelPluginMetas,
@@ -126,6 +127,7 @@ import { QueryRunner } from './features/query/state/QueryRunner';
 import { runRequest } from './features/query/state/runRequest';
 import { initWindowRuntime } from './features/runtime/init';
 import { cleanupOldExpandedFolders } from './features/search/utils';
+import { StarredItemsSrv } from './features/stars/starredItemsSrv';
 import { variableAdapters } from './features/variables/adapters';
 import { createAdHocVariableAdapter } from './features/variables/adhoc/adapter';
 import { createConstantVariableAdapter } from './features/variables/constant/adapter';
@@ -311,6 +313,7 @@ export class GrafanaApp {
       dataSourceSrv.init(config.datasources, config.defaultDatasource);
       setDataSourceSrv(dataSourceSrv);
       initWindowRuntime();
+      setStarredItemsSrv(new StarredItemsSrv());
 
       if (contextSrv.user.orgRole !== '') {
         preloadPlugins(await getAppPluginsToPreload());

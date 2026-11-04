@@ -9,6 +9,7 @@ import {
 import { API_GROUP as DASHBOARD_API_GROUP } from '@grafana/api-clients/rtkq/dashboard/v0alpha1';
 import { API_GROUP as FOLDER_API_GROUP } from '@grafana/api-clients/rtkq/folder/v1beta1';
 import { type IconName, locationUtil } from '@grafana/data';
+import { useObservable } from '@grafana/data/unstable';
 import { config } from '@grafana/runtime';
 import { useAddStarMutation, useRemoveStarMutation, useListStarsQuery } from 'app/api/clients/collections/v1alpha1';
 import { setStarred, setStarredItems, type StarredNavItem } from 'app/core/reducers/navBarTree';
@@ -18,6 +19,7 @@ import { getGrafanaSearcher } from 'app/features/search/service/searcher';
 import { getIconForKind } from 'app/features/search/service/utils';
 import { dispatch } from 'app/store/store';
 
+import { getStarredLinkIcon, loadStarredItemsState, recordStarredAt, starredItemsState$ } from './starredItemsSrv';
 import { findStarredNames, userStarsFieldSelector } from './utils';
 
 type StarItemArgs = {
@@ -74,13 +76,14 @@ export const useStarItem = (group: string, kind: string) => {
 
       const entry = starredNavEntry(group, kind, id);
       if (entry) {
+        const starredAt = await recordStarredAt(id, newStarredState);
         dispatch(
           setStarred({
             id,
             title,
             url: entry.url,
             icon: entry.icon,
-            sortWeight: entry.sortWeight,
+            sortWeight: starredAt ?? entry.sortWeight,
             isStarred: newStarredState,
           })
         );
@@ -95,11 +98,13 @@ export const useStarItem = (group: string, kind: string) => {
       await removeStarLegacy({ dashboardUid: id });
     }
 
+    const starredAt = await recordStarredAt(id, newStarredState);
     dispatch(
       setStarred({
         id,
         title,
         url: locationUtil.assureBaseUrl(`/d/${id}`),
+        sortWeight: starredAt,
         isStarred: newStarredState,
       })
     );
@@ -153,8 +158,9 @@ export const useStarredItems = (group: string, kind: string, options?: { skip?: 
 const STARRED_NAV_CAP = 50;
 
 /**
- * Sync starred dashboards into the nav tree on mount and when the star set changes.
+ * Sync starred dashboards and links into the nav tree on mount and when the star set changes.
  * Replaces whatever the backend shipped in bootData (which is empty in dual-writer mode 5).
+ * Items are ordered by the time they were starred, items starred before tracking go first.
  */
 export const useSyncStarredItemsInNav = () => {
   const foldersEnabled = starredFoldersEnabled();
@@ -172,7 +178,17 @@ export const useSyncStarredItemsInNav = () => {
   // A skipped useStarredItems reports isLoading:true indefinitely, so only honor
   // the folder query's loading/error when the feature is actually on.
   const folderLoading = foldersEnabled ? folderLoadingRaw : false;
-  const isLoading = dashboardsLoading || folderLoading;
+
+  // Starred links and starred times from the user storage
+  const starredState = useObservable(starredItemsState$, starredItemsState$.getValue());
+  useEffect(() => {
+    loadStarredItemsState().catch((err) => {
+      console.error('Failed to load starred items', err);
+      starredItemsState$.next({ links: [], starredAt: {} });
+    });
+  }, []);
+
+  const isLoading = dashboardsLoading || folderLoading || !starredState;
   const isError = dashboardsError || (foldersEnabled && folderError);
 
   // Initialized from the stars query so a remount with a warm RTK cache doesn't
@@ -188,9 +204,19 @@ export const useSyncStarredItemsInNav = () => {
   );
 
   useEffect(() => {
-    if (isLoading || dashboardKey === undefined || folderKey === undefined) {
+    if (isLoading || !starredState || dashboardKey === undefined || folderKey === undefined) {
       return;
     }
+
+    const { links, starredAt } = starredState;
+    const linkItems: StarredNavItem[] = links.map((link) => ({
+      id: link.id,
+      title: link.title,
+      url: locationUtil.assureBaseUrl(link.url),
+      icon: getStarredLinkIcon(),
+      sortWeight: link.starredAt,
+    }));
+    const linkIds = links.map((link) => link.id);
 
     const dashboardNames = dashboardKey === '' ? [] : dashboardKey.split(',');
     const folderNames = folderKey === '' ? [] : folderKey.split(',');
@@ -198,7 +224,7 @@ export const useSyncStarredItemsInNav = () => {
     const names = [...new Set([...dashboardNames, ...folderNames])].sort().slice(0, STARRED_NAV_CAP);
 
     if (names.length === 0) {
-      dispatch(setStarredItems({ uids: [], items: [] }));
+      dispatch(setStarredItems({ uids: linkIds, items: linkItems }));
       setHasSynced(true);
       setSearchFailed(false);
       return;
@@ -230,10 +256,10 @@ export const useSyncStarredItemsInNav = () => {
             title: row.name,
             url: row.url,
             icon: foldersEnabled ? getIconForKind(row.kind) : undefined,
-            sortWeight: row.kind === 'folder' ? STARRED_FOLDER_SORT_WEIGHT : undefined,
+            sortWeight: starredAt[row.uid] ?? (row.kind === 'folder' ? STARRED_FOLDER_SORT_WEIGHT : undefined),
           });
         }
-        dispatch(setStarredItems({ uids: names, items }));
+        dispatch(setStarredItems({ uids: [...names, ...linkIds], items: [...items, ...linkItems] }));
         setHasSynced(true);
         setSearchFailed(false);
       })
@@ -247,7 +273,7 @@ export const useSyncStarredItemsInNav = () => {
     return () => {
       cancelled = true;
     };
-  }, [dashboardKey, folderKey, isLoading, foldersEnabled]);
+  }, [dashboardKey, folderKey, isLoading, foldersEnabled, starredState]);
 
   return { isLoading: isLoading || !hasSynced, isError: isError || searchFailed };
 };

@@ -54,5 +54,12 @@ export {
   renderLimitedComponents,
 } from './pluginExtensions/utils';
 export { setCurrentUser } from './user';
+export {
+  getStarredItemsSrv,
+  setStarredItemsSrv,
+  type StarredItem,
+  type StarredItemKind,
+  type StarredItemsSrv,
+} from './starredItemsSrv';
 export { RuntimeDataSource } from './RuntimeDataSource';
 export { ScopesContext, type ScopesContextValueState, type ScopesContextValue, useScopes } from './ScopesContext';
