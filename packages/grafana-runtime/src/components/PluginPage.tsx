@@ -12,6 +12,8 @@ export interface PluginPageProps {
   info?: PageInfoItem[];
   /** Can be used to place actions inline with the heading */
   actions?: React.ReactNode;
+  /** Can be used to place actions next to the breadcrumbs in the top bar (e.g. star button) */
+  breadcrumbActions?: React.ReactNode;
   /** Can be used to customize rendering of title */
   renderTitle?: (title: string) => React.ReactNode;
   /** Shown under main heading */

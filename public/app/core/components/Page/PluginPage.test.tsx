@@ -1,8 +1,9 @@
 import { screen } from '@testing-library/react';
-import { render } from 'test/test-utils';
+import { getWrapper, render } from 'test/test-utils';
 
 import { selectors } from '@grafana/e2e-selectors';
 import { config } from '@grafana/runtime';
+import { AppChromeService } from 'app/core/components/AppChrome/AppChromeService';
 import { HOME_NAV_ID } from 'app/core/reducers/navModel';
 import { PluginPageContext, buildPluginPageContext } from 'app/features/plugins/components/PluginPageContext';
 
@@ -44,5 +45,21 @@ describe('PluginPage', () => {
 
     expect(screen.getByText('Plugin page content')).toBeVisible();
     expect(screen.queryByTestId(selectors.components.Plugins.appPage('undefined'))).not.toBeInTheDocument();
+  });
+
+  it('should add breadcrumb actions to the top bar', () => {
+    config.bootData.navTree = [{ id: HOME_NAV_ID, text: 'Home', url: '/' }];
+    const chrome = new AppChromeService();
+    const actions = <button>Star</button>;
+
+    const { unmount } = render(<PluginPage breadcrumbActions={actions}>Plugin page content</PluginPage>, {
+      wrapper: getWrapper({ grafanaContext: { chrome } }),
+    });
+
+    expect(chrome.state.getValue().breadcrumbActions).toBe(actions);
+
+    unmount();
+
+    expect(chrome.state.getValue().breadcrumbActions).toBeUndefined();
   });
 });
