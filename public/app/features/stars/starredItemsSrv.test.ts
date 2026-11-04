@@ -123,4 +123,37 @@ describe('StarredItemsSrv', () => {
 
     expect(JSON.parse(mockStorage.get('starred-at')!)).toEqual({});
   });
+
+  it('updates title and url of starred links keeping the order', async () => {
+    mockStorage.set(
+      'links',
+      JSON.stringify([
+        { id: '/a/app/first', title: 'First', url: '/a/app/first', starredAt: 2000 },
+        { id: '/a/app/second', title: 'Second', url: '/a/app/second', starredAt: 3000 },
+      ])
+    );
+
+    await new StarredItemsSrv().updateStarredItems([
+      { kind: 'link', id: '/a/app/first', title: 'First renamed', url: '/a/app/first' },
+      { kind: 'link', id: '/a/app/not-starred', title: 'Not starred', url: '/a/app/not-starred' },
+    ]);
+
+    expect(JSON.parse(mockStorage.get('links')!)).toEqual([
+      { id: '/a/app/first', title: 'First renamed', url: '/a/app/first', starredAt: 2000 },
+      { id: '/a/app/second', title: 'Second', url: '/a/app/second', starredAt: 3000 },
+    ]);
+    expect(starredItemsState$.getValue()?.links[0].title).toEqual('First renamed');
+  });
+
+  it('does not save links when nothing changed', async () => {
+    const links = JSON.stringify([{ id: '/a/app/first', title: 'First', url: '/a/app/first', starredAt: 2000 }]);
+    mockStorage.set('links', links);
+
+    await new StarredItemsSrv().updateStarredItems([
+      { kind: 'link', id: '/a/app/first', title: 'First', url: '/a/app/first' },
+    ]);
+
+    expect(mockStorage.get('links')).toBe(links);
+    expect(mockedDispatch).not.toHaveBeenCalled();
+  });
 });
