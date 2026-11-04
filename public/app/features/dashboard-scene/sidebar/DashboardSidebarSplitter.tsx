@@ -26,7 +26,6 @@ import { DashboardControlsChrome } from '../scene/DashboardControlsChrome';
 import { type DashboardScene } from '../scene/DashboardScene';
 import { NavToolbarActions } from '../scene/NavToolbarActions';
 import { PublicDashboardBadge } from '../scene/new-toolbar/actions/PublicDashboardBadge';
-import { StarButton } from '../scene/new-toolbar/actions/StarButton';
 import { dynamicDashNavActions } from '../utils/registerDynamicDashNavAction';
 
 import { DashboardSidebarRenderer } from './DashboardSidebarRenderer';
@@ -210,7 +209,6 @@ function useUpdateAppChromeActions(dashboard: DashboardScene) {
 
     const breadcrumbActions = (
       <>
-        {hasUid && canStar && <StarButton dashboard={dashboard} />}
         {hasUid && canStar && !isSnapshot && <PublicDashboardBadge dashboard={dashboard} />}
         {renderDynamicNavActions()}
       </>

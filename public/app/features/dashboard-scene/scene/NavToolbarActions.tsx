@@ -16,7 +16,6 @@ import { playlistSrv } from 'app/features/playlist/PlaylistSrv';
 import { ReadOnlyBadge } from 'app/features/provisioning/components/ReadOnlyBadge';
 import { useGetResourceRepositoryView } from 'app/features/provisioning/hooks/useGetResourceRepositoryView';
 import { getReadOnlyTooltipText } from 'app/features/provisioning/utils/tooltip';
-import { StarToolbarButton } from 'app/features/stars/StarToolbarButton';
 import { useSelector } from 'app/types/store';
 
 import { selectFolderRepository } from '../../provisioning/utils/selectors';
@@ -66,7 +65,6 @@ export function ToolbarActions({ dashboard }: Props) {
     editview,
     editPanel,
     editable,
-    title,
     meta: { isEmbedded, isSnapshot, canMakeEditable, canStar, canSave, folderUid },
   } = dashboard.useState();
   const { isPlaying } = playlistSrv.useState();
@@ -96,25 +94,6 @@ export function ToolbarActions({ dashboard }: Props) {
     // This adds the presence indicators in enterprise
     addDynamicActions(toolbarActions, dynamicDashNavActions.left, 'left-actions');
   }
-
-  toolbarActions.push({
-    group: 'icon-actions',
-    condition: uid && Boolean(canStar) && isShowingDashboard && !isEditing,
-    render: () => {
-      if (!uid) {
-        return null;
-      }
-      return (
-        <StarToolbarButton
-          key="star-dashboard-button"
-          group="dashboard.grafana.app"
-          kind="Dashboard"
-          title={title}
-          id={uid}
-        />
-      );
-    },
-  });
 
   toolbarActions.push({
     group: 'icon-actions',

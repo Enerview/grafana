@@ -27,7 +27,6 @@ import { PublicDashboardBadgeLegacy } from 'app/features/dashboard-scene/scene/n
 import { DashboardInteractions } from 'app/features/dashboard-scene/utils/interactions';
 import { playlistSrv } from 'app/features/playlist/PlaylistSrv';
 import { updateTimeZoneForSession } from 'app/features/profile/state/reducers';
-import { StarToolbarButton } from 'app/features/stars/StarToolbarButton';
 import { type KioskMode } from 'app/types/dashboard';
 import { DashboardMetaChangedEvent, ShowModalReactEvent } from 'app/types/events';
 
@@ -148,24 +147,10 @@ const DashNav = memo<Props>((props) => {
 
   const renderLeftActions = () => {
     const { dashboard, kioskMode } = props;
-    const { canStar } = dashboard.meta;
     const buttons: ReactNode[] = [];
 
     if (kioskMode || isPlaylistRunning()) {
       return [];
-    }
-
-    // uid check narrows the type for StarToolbarButton's required `id` prop
-    if (canStar && dashboard.uid) {
-      buttons.push(
-        <StarToolbarButton
-          key="button-star"
-          group="dashboard.grafana.app"
-          kind="Dashboard"
-          title={dashboard.title}
-          id={dashboard.uid}
-        />
-      );
     }
 
     if (dashboard.uid) {
