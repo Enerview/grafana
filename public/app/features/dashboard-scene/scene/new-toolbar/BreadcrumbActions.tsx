@@ -6,7 +6,6 @@ import { ManagedDashboardNavBarBadge } from '../ManagedDashboardNavBarBadge';
 
 import { OpenSnapshotOriginButton } from './actions/OpenSnapshotOriginButton';
 import { PublicDashboardBadge } from './actions/PublicDashboardBadge';
-import { StarButton } from './actions/StarButton';
 import { getDynamicActions, renderActionElements } from './utils';
 
 export const BreadcrumbActions = ({ dashboard }: { dashboard: DashboardScene }) => {
@@ -26,12 +25,6 @@ export const BreadcrumbActions = ({ dashboard }: { dashboard: DashboardScene }) 
     [
       // This adds the presence indicators in enterprise
       ...getDynamicActions(dynamicDashNavActions.left, 'left-dynamic', !isEditingPanel),
-      {
-        key: 'star-button',
-        component: StarButton,
-        group: 'actions',
-        condition: hasUid && canStar && isShowingDashboard && !isEditingDashboard,
-      },
       {
         key: 'public-dashboard-badge',
         component: PublicDashboardBadge,

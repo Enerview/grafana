@@ -31,6 +31,11 @@ export interface StarredItem {
 export interface StarredItemsSrv {
   getStarredItems(): Promise<StarredItem[]>;
   setStarred(item: StarredItem, isStarred: boolean): Promise<void>;
+  /**
+   * Update title and url of already starred links (e.g. after a page rename) keeping their order.
+   * Items that are not starred are ignored.
+   */
+  updateStarredItems(items: StarredItem[]): Promise<void>;
 }
 
 let singletonInstance: StarredItemsSrv | undefined;

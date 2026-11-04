@@ -155,6 +155,34 @@ const setStarredLink = async (item: StarredItem, isStarred: boolean) => {
   );
 };
 
+/**
+ * Update title and url of starred links keeping their order. The nav is synced from the state.
+ */
+const updateStarredLinks = async (items: StarredItem[]) => {
+  const state = await loadStarredItemsState();
+  const updates = new Map(items.filter((item) => item.kind === 'link').map((item) => [item.id, item]));
+  let isChanged = false;
+
+  const links = state.links.map((link) => {
+    const item = updates.get(link.id);
+
+    if (!item || (item.title === link.title && item.url === link.url)) {
+      return link;
+    }
+
+    isChanged = true;
+    return { ...link, title: item.title, url: item.url };
+  });
+
+  if (!isChanged) {
+    return;
+  }
+
+  await getStorage().setItem(LINKS_KEY, JSON.stringify(links));
+  starredItemsState$.next({ ...state, links });
+  loadPromise = Promise.resolve({ ...state, links });
+};
+
 const setStarredDashboard = async (item: StarredItem, isStarred: boolean) => {
   if (config.featureToggles.starsFromAPIServer) {
     const args = { id: item.id, name: `user-${contextSrv.user.uid}`, group: DASHBOARD_API_GROUP, kind: 'Dashboard' };
@@ -247,5 +275,9 @@ export class StarredItemsSrv implements StarredItemsSrvType {
       return setStarredDashboard(item, isStarred);
     }
     return setStarredLink(item, isStarred);
+  }
+
+  async updateStarredItems(items: StarredItem[]): Promise<void> {
+    return updateStarredLinks(items);
   }
 }
