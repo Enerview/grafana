@@ -46,6 +46,7 @@ export const MegaMenu = memo(
                     isMinimizeDockedView={isMinimized}
                     isPinned={isPinned}
                     onClick={state.megaMenuDocked ? undefined : () => toggleSidebar(true)}
+                    onExpandSidebar={() => toggleSidebar(false)}
                     activeItem={activeItem}
                     onPin={onPinItem}
                   />

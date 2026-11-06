@@ -22,11 +22,27 @@ interface Props {
   onPin: (item: NavModelItem) => void;
   isPinned: (id?: string) => boolean;
   isMinimizeDockedView: boolean;
+  /** Expands the minimized docked menu */
+  onExpandSidebar?: () => void;
 }
+
+/**
+ * Sections without their own page. The url is kept for pinning, clicking the item toggles the section.
+ */
+const SECTIONS_WITHOUT_PAGE = new Set(['starred']);
 
 const MAX_DEPTH = 2;
 
-export function MegaMenuItem({ link, activeItem, isMinimizeDockedView, level = 0, onClick, onPin, isPinned }: Props) {
+export function MegaMenuItem({
+  link,
+  activeItem,
+  isMinimizeDockedView,
+  level = 0,
+  onClick,
+  onPin,
+  isPinned,
+  onExpandSidebar,
+}: Props) {
   const { chrome } = useGrafana();
   const state = chrome.useState();
   const menuIsDocked = state.megaMenuDocked;
@@ -39,6 +55,7 @@ export function MegaMenuItem({ link, activeItem, isMinimizeDockedView, level = 0
   );
   const showExpandButton =
     level < MAX_DEPTH && Boolean(linkHasChildren(link) || link.emptyMessage) && !isMinimizeDockedView;
+  const isSectionWithoutPage = level === 0 && SECTIONS_WITHOUT_PAGE.has(link.id ?? '');
   const item = useRef<HTMLLIElement>(null);
 
   const styles = useStyles2(getStyles);
@@ -75,6 +92,16 @@ export function MegaMenuItem({ link, activeItem, isMinimizeDockedView, level = 0
     );
   }
 
+  function onToggleSection() {
+    if (isMinimizeDockedView) {
+      onExpandSidebar?.();
+      setSectionExpanded(true);
+      return;
+    }
+
+    setSectionExpanded(!sectionExpanded);
+  }
+
   function getIconName(isExpanded: boolean) {
     return isExpanded ? 'angle-up' : 'angle-down';
   }
@@ -92,12 +119,16 @@ export function MegaMenuItem({ link, activeItem, isMinimizeDockedView, level = 0
         <div className={styles.collapsibleSectionWrapper}>
           <MegaMenuItemText
             isActive={isActive}
-            onClick={() => {
-              link.onClick?.();
-              onClick?.();
-            }}
+            onClick={
+              isSectionWithoutPage
+                ? onToggleSection
+                : () => {
+                    link.onClick?.();
+                    onClick?.();
+                  }
+            }
             target={link.target}
-            url={link.url}
+            url={isSectionWithoutPage ? undefined : link.url}
             onPin={() => onPin(link)}
             isPinned={isPinned(link.url)}
             title={isMinimizeDockedView ? link.text : undefined}
