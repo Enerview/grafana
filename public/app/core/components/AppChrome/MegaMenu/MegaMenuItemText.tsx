@@ -12,7 +12,8 @@ export interface Props {
   isActive?: boolean;
   onClick?: () => void;
   target?: HTMLAnchorElement['target'];
-  url: string;
+  /** Without url the item is rendered as a button calling onClick (e.g. a section without its own page) */
+  url?: string;
   onPin: (id?: string) => void;
   isPinned?: boolean;
   title?: string;
@@ -22,7 +23,7 @@ export function MegaMenuItemText({ children, isActive, onClick, target, url, onP
   const theme = useTheme2();
 
   const styles = getStyles(theme, isActive);
-  const LinkComponent = !target && url.startsWith('/') ? Link : 'a';
+  const LinkComponent = !target && url?.startsWith('/') ? Link : 'a';
 
   const linkContent = (
     <div className={styles.linkContent}>
@@ -39,17 +40,29 @@ export function MegaMenuItemText({ children, isActive, onClick, target, url, onP
 
   return (
     <div className={cx(styles.wrapper, isActive && styles.wrapperActive)}>
-      <LinkComponent
-        data-testid={selectors.components.NavMenu.item}
-        className={styles.container}
-        href={url}
-        target={target}
-        onClick={onClick}
-        title={title}
-        {...(isActive && { 'aria-current': 'page' })}
-      >
-        {linkContent}
-      </LinkComponent>
+      {url ? (
+        <LinkComponent
+          data-testid={selectors.components.NavMenu.item}
+          className={styles.container}
+          href={url}
+          target={target}
+          onClick={onClick}
+          title={title}
+          {...(isActive && { 'aria-current': 'page' })}
+        >
+          {linkContent}
+        </LinkComponent>
+      ) : (
+        <button
+          type="button"
+          data-testid={selectors.components.NavMenu.item}
+          className={cx(styles.container, styles.button)}
+          onClick={onClick}
+          title={title}
+        >
+          {linkContent}
+        </button>
+      )}
       {contextSrv.isSignedIn && url && url !== '/bookmarks' && isBookmarksAllowed && (
         <IconButton
           name="bookmark"
@@ -123,6 +136,13 @@ const getStyles = (theme: GrafanaTheme2, isActive: Props['isActive']) => ({
       outline: `2px solid ${theme.colors.primary.main}`,
       outlineOffset: '-2px',
     },
+  }),
+  button: css({
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    textAlign: 'left',
+    cursor: 'pointer',
   }),
   linkContent: css({
     alignItems: 'center',
