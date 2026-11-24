@@ -5129,9 +5129,17 @@
       "PullRequestJobOptions": {
         "type": "object",
         "properties": {
+          "forkURL": {
+            "description": "URL of the head repository for a pull request from a fork, when available.",
+            "type": "string"
+          },
           "hash": {
             "description": "The specific commit hash that triggered this notice",
             "type": "string"
+          },
+          "isFork": {
+            "description": "Whether the pull request's head repository differs from its base repository. Omitted when repository identities were unavailable, including older jobs.",
+            "type": "boolean"
           },
           "pr": {
             "description": "Pull request number (when appropriate)",
@@ -6177,6 +6185,11 @@
           "job": {
             "description": "The ID for the job that ran this sync",
             "type": "string"
+          },
+          "lastChecked": {
+            "description": "When the controller last attempted a sync or an interval check (Unix milliseconds).",
+            "type": "integer",
+            "format": "int64"
           },
           "lastRef": {
             "description": "The repository ref when the last successful sync ran",

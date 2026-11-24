@@ -1715,8 +1715,12 @@ export type MoveJobOptions = {
   targetPath?: string;
 };
 export type PullRequestJobOptions = {
+  /** URL of the head repository for a pull request from a fork, when available. */
+  forkURL?: string;
   /** The specific commit hash that triggered this notice */
   hash?: string;
+  /** Whether the pull request's head repository differs from its base repository. Omitted when repository identities were unavailable, including older jobs. */
+  isFork?: boolean;
   /** Pull request number (when appropriate) */
   pr?: number;
   /** The branch of commit hash */
@@ -2052,6 +2056,8 @@ export type SyncStatus = {
   incremental?: boolean;
   /** The ID for the job that ran this sync */
   job?: string;
+  /** When the controller last attempted a sync or an interval check (Unix milliseconds). */
+  lastChecked?: number;
   /** The repository ref when the last successful sync ran */
   lastRef?: string;
   /** Summary messages (will be shown to users) */

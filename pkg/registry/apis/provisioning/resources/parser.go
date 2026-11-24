@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"strings"
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.yaml.in/yaml/v3"
@@ -13,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/dynamic"
 
 	dashboard "github.com/grafana/grafana/apps/dashboard/pkg/apis/dashboard/v0alpha1"
@@ -23,6 +25,7 @@ import (
 	"github.com/grafana/grafana/pkg/apimachinery/apis/common/v0alpha1"
 	"github.com/grafana/grafana/pkg/apimachinery/identity"
 	"github.com/grafana/grafana/pkg/apimachinery/utils"
+	"github.com/grafana/grafana/pkg/apimachinery/validation"
 	"github.com/grafana/grafana/pkg/infra/tracing"
 	"github.com/grafana/grafana/pkg/util"
 )
@@ -245,6 +248,10 @@ func (r *parser) Parse(ctx context.Context, info *repository.FileInfo) (parsed *
 		obj.SetName(obj.GetGenerateName() + util.GenerateShortUID())
 	}
 
+	if errs := validation.IsValidGrafanaName(obj.GetName()); len(errs) > 0 {
+		return nil, NewResourceValidationError(field.Invalid(field.NewPath("metadata", "name"), obj.GetName(), strings.Join(errs, "; ")))
+	}
+
 	obj.SetUID("")             // clear identifiers
 	obj.SetResourceVersion("") // clear identifiers
 
@@ -324,6 +331,16 @@ func (f *ParsedResource) ExistingFolder() string {
 		return ""
 	}
 	return meta.GetFolder()
+}
+
+func (f *ParsedResource) IsFolder() bool {
+	return f.GVR.GroupResource() == FolderResource.GroupResource()
+}
+
+// IsPreviewRead classifies a read using its ref; callers must use it only for reads.
+// Folder manifests retain their existing authorization.
+func (f *ParsedResource) IsPreviewRead(configuredBranch string) bool {
+	return !f.IsFolder() && f.Info != nil && f.Info.Ref != "" && f.Info.Ref != configuredBranch
 }
 
 func (f *ParsedResource) DryRun(ctx context.Context) error {

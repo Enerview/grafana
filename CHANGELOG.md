@@ -1,3 +1,82 @@
+<!-- 13.2.5 START -->
+
+# 13.2.5 (2026-10-27)
+
+### Security
+
+- Security: Fix CVE-2026-100105
+- Security: Fix CVE-2026-103506
+- Security: Fix CVE-2026-88858
+- Security: Fix CVE-2026-88967
+
+### Features and enhancements
+
+- **Git Sync:** Ignore hidden paths in repository scans and diffs [#135028](https://github.com/grafana/grafana/pull/135028), [@ferruvich](https://github.com/ferruvich)
+- **Provisioning:** Default save from a branch preview to the previewed branch [#135174](https://github.com/grafana/grafana/pull/135174), [@Clarity-89](https://github.com/Clarity-89)
+- **Provisioning:** Never replace the repository root folder during incremental sync [#135463](https://github.com/grafana/grafana/pull/135463), [@ferruvich](https://github.com/ferruvich)
+
+### Bug fixes
+
+- **Plugins:** Don't report loaded plugins as not registered when a request times out [#135665](https://github.com/grafana/grafana/pull/135665), [@leventebalogh](https://github.com/leventebalogh)
+- **Provisioning:** Fix PR dashboard previews when served from a sub-path [#135559](https://github.com/grafana/grafana/pull/135559), [@gustaff-weldon](https://github.com/gustaff-weldon)
+
+<!-- 13.2.5 END -->
+<!-- 13.2.4 START -->
+
+# 13.2.4 (2026-10-13)
+
+### Security
+
+- Security: Fix CVE-2026-15577
+- Security: Fix CVE-2026-33374
+- Security: Fix CVE-2026-93294
+- Security: Fix CVE-2026-95502
+
+### Features and enhancements
+
+- **Alerting:** Strip sensitive headers from oauth2 cross-host redirects [#134433](https://github.com/grafana/grafana/pull/134433), [@JacobsonMT](https://github.com/JacobsonMT)
+- **Dashboard:** Fall back when collection deletion is unsupported [#134224](https://github.com/grafana/grafana/pull/134224), [@bestend](https://github.com/bestend)
+- **Git Sync:** Clarify repository links for pure Git [#134253](https://github.com/grafana/grafana/pull/134253), [@ferruvich](https://github.com/ferruvich)
+- **Provisioning:** Allow resource previews in unsynced folders [#134391](https://github.com/grafana/grafana/pull/134391), [@grafana-writer[bot]](https://github.com/grafana-writer[bot])
+- **Provisioning:** Reject invalid resource names before API calls [#133776](https://github.com/grafana/grafana/pull/133776), [@grafana-writer[bot]](https://github.com/grafana-writer[bot])
+- **Provisioning:** Show last checked time in Pull status [#134483](https://github.com/grafana/grafana/pull/134483), [@ferruvich](https://github.com/ferruvich)
+- **Provisioning:** Skip previews for pull requests from forks [#133799](https://github.com/grafana/grafana/pull/133799), [@ferruvich](https://github.com/ferruvich)
+- **Provisioning:** Stop PR previews when refs disappear [#133855](https://github.com/grafana/grafana/pull/133855), [@ferruvich](https://github.com/ferruvich)
+- **Provisioning:** Support legacy paths and diagnose missing source annotations [#133779](https://github.com/grafana/grafana/pull/133779), [@grafana-writer[bot]](https://github.com/grafana-writer[bot])
+- **Provisioning:** write terminal sync status back to repository on early sync-job failures and Respect Git Sync polling intervals after unchanged refs [#134478](https://github.com/grafana/grafana/pull/134478), [@mustafasencer](https://github.com/mustafasencer)
+
+### Bug fixes
+
+- **CVE-2026-92539:** IAM: Fix: SCIM (Enterprise)
+
+<!-- 13.2.4 END -->
+<!-- 13.2.3 START -->
+
+# 13.2.3 (2026-09-29)
+
+### Security
+
+- Security: Fix CVE-2026-13719
+- Security: Fix CVE-2026-13720
+- Security: Fix CVE-2026-81841
+
+<!-- 13.2.3 END -->
+<!-- 13.2.2 START -->
+
+# 13.2.2 (2026-09-15)
+
+### Security
+
+- Security: Fix CVE-2026-15815
+- Security: Fix CVE-2026-76154
+- Security: Fix CVE-2026-79656
+
+### Bug fixes
+
+- **Dashboards:** Preserve query variable refresh setting on v2 dashboard import [#132089](https://github.com/grafana/grafana/pull/132089), [@grafana-writer[bot]](https://github.com/grafana-writer[bot])
+- **Provisioning:** Fix folder rename UID collision during full sync [#132157](https://github.com/grafana/grafana/pull/132157), [@grafana-writer[bot]](https://github.com/grafana-writer[bot])
+
+<!-- 13.2.2 END -->
 <!-- 13.2.1 START -->
 
 # 13.2.1 (2026-09-02)
